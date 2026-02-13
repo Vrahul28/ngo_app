@@ -23,17 +23,26 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final ChatController controller = Get.find<ChatController>();
   final TextEditingController _chatController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+
     controller.initChat(
       currentUser: widget.currentUserId,
       otherUser: widget.peerUserId,
     );
+
+    /// VERY IMPORTANT
+    /// mark read AFTER chat opens
+    Future.delayed(const Duration(milliseconds: 700), () {
+      controller.markChatAsRead();
+    });
   }
 
-  @override
+   @override
   void dispose() {
+    controller.markChatAsRead(); // also on exit
     _chatController.dispose();
     super.dispose();
   }
@@ -78,14 +87,14 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       child: Column(
                         children: [
-                          if (!isMe)
-                            Text(
-                              msg['senderName'],
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          // if (!isMe)
+                          //   Text(
+                          //     msg['senderName'],
+                          //     style: const TextStyle(
+                          //       fontSize: 10,
+                          //       fontWeight: FontWeight.bold,
+                          //     ),
+                          //   ),
                             Text(
                               msg['message'] ?? '',
                               style: TextStyle(
@@ -121,9 +130,6 @@ class _ChatPageState extends State<ChatPage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        debugPrint(widget.currentUserId);
-                        debugPrint(widget.peerUserId);
-                        debugPrint(controller.chatId.value);
                         controller.sendMessage(_chatController.text, widget.currentUserId,widget.peerUserId,controller.chatId.value);
                         _chatController.clear();
                       },

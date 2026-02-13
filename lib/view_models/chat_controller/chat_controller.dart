@@ -1,10 +1,7 @@
-import 'dart:io';
-
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+
 
 class ChatController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -16,33 +13,51 @@ class ChatController extends GetxController {
   RxList<QueryDocumentSnapshot> messages = <QueryDocumentSnapshot>[].obs;
   RxInt unreadCount = 0.obs;
 
+  StreamSubscription? messageSub;
+  StreamSubscription? chatListSub;
+
+  /// Create stable chat id
   String getChatId(String id1, String id2) {
     return id1.compareTo(id2) < 0 ? '${id1}_$id2' : '${id2}_$id1';
   }
 
+  /// ================= CHAT PAGE =================
+
   void initChat({
     required String currentUser,
     required String otherUser,
-  }) {
-
+  }) async {
     currentUserId = currentUser;
+    otherUserId = otherUser;
+
     chatId.value = getChatId(currentUser, otherUser);
-    debugPrint("ChatID: $chatId");
+
+    await _ensureParticipantDoc();   // VERY IMPORTANT
     listenMessages();
-    resetUnread();
-    // firestore
-    //     .collection('chats')
-    //     .doc(chatId.value)
-    //     .collection('messages')
-    //     .orderBy('timestamp', descending: true)
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   messages.value = snapshot.docs;
-    // });
   }
 
+  /// ensure participants document exists
+  Future<void> _ensureParticipantDoc() async {
+    final ref = firestore
+        .collection('chats')
+        .doc(chatId.value)
+        .collection('participants')
+        .doc(currentUserId);
+
+    final doc = await ref.get();
+
+    if (!doc.exists) {
+      await ref.set({
+        'lastSeen': Timestamp(0, 0),
+      });
+    }
+  }
+
+  /// listen chat messages
   void listenMessages() {
-    FirebaseFirestore.instance
+    messageSub?.cancel();
+
+    messageSub = firestore
         .collection('chats')
         .doc(chatId.value)
         .collection('messages')
@@ -50,106 +65,103 @@ class ChatController extends GetxController {
         .snapshots()
         .listen((snapshot) {
       messages.value = snapshot.docs;
-
-      // Increase unread only if sender is NOT me
-      if (snapshot.docChanges.isNotEmpty) {
-        final change = snapshot.docChanges.first;
-        if (change.type == DocumentChangeType.added) {
-          final msg = change.doc.data();
-          if (msg != null && msg['senderId'] != currentUserId) {
-            unreadCount++;
-          }
-        }
-      }
     });
   }
 
-  void resetUnread() {
+  /// mark read
+  Future<void> markChatAsRead() async {
+    await firestore
+        .collection('chats')
+        .doc(chatId.value)
+        .collection('participants')
+        .doc(currentUserId)
+        .set({
+      'lastSeen': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
     unreadCount.value = 0;
   }
 
-  //Pick Image from Gallery
-  Future<File?> pickImage() async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      return File(image.path);
-    }
-    return null;
+  /// ================= CHAT LIST BADGE =================
+
+  void listenChatListUnread(String myUid, String otherUid) async {
+
+    String id = getChatId(myUid, otherUid);
+
+    print("LISTENING CHAT ID: $id");
+
+    // get lastSeen
+    final participantDoc = await firestore
+        .collection('chats')
+        .doc(id)
+        .collection('participants')
+        .doc(myUid)
+        .get();
+
+    Timestamp lastSeen =
+        participantDoc.data()?['lastSeen'] ?? Timestamp(0, 0);
+
+    chatListSub?.cancel();
+
+    chatListSub = firestore
+        .collection('chats')
+        .doc(id)
+        .collection('messages')
+        .orderBy('timestamp')
+        .snapshots()
+        .listen((snapshot) {
+
+      int count = 0;
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        if (data['senderId'] != myUid &&
+            data['timestamp'] != null &&
+            (data['timestamp'] as Timestamp).compareTo(lastSeen) > 0) {
+          count++;
+        }
+      }
+
+      unreadCount.value = count;
+    });
   }
 
-  //upload image to firebase
-  Future<String?> uploadImageToFirebase(File imageFile, String chatId) async {
-    try {
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+  /// ================= SEND MESSAGE =================
 
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('chat_images/$chatId/$fileName.jpg');
+  Future<void> sendMessage(
+      String text,
+      String senderId,
+      String receiverId,
+      String chatId,
+      ) async {
 
-      await ref.putFile(
-        imageFile,
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-
-      return await ref.getDownloadURL();
-    } catch (e) {
-      debugPrint("Image upload error: $e");
-      return null;
-    }
-  }
-
-  //Send message in firebase
-  Future<void> sendMessage(String text,String senderId,String receiverId, String chatId) async {
     if (text.trim().isEmpty) return;
 
-    await firestore
+    final msgRef = firestore
         .collection('chats')
         .doc(chatId)
-        .collection('messages')
-        .add({
-      'senderId': senderId,
-      'receiverId': receiverId,
+        .collection('messages');
+
+    await msgRef.add({
       'message': text.trim(),
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-
-    await firestore.collection('chats').doc(chatId).set({
-      'participants': [senderId, receiverId],
-      'lastMessage': text.trim(),
-      'lastMessageTime': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
-
-  //Send Image in Message
-  Future<void> sendImageMessage({
-    required String senderId,
-    required String receiverId,
-    required String chatId,
-  }) async {
-    final File? imageFile = await pickImage();
-    if (imageFile == null) return;
-
-    final imageUrl = await uploadImageToFirebase(imageFile, chatId);
-    if (imageUrl == null) return;
-
-    await firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add({
       'senderId': senderId,
       'receiverId': receiverId,
-      'imageUrl': imageUrl,
-      'type': 'image',
       'timestamp': FieldValue.serverTimestamp(),
     });
 
     await firestore.collection('chats').doc(chatId).set({
       'participants': [senderId, receiverId],
-      'lastMessage': 'Image',
+      'lastMessage': text,
       'lastMessageTime': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 
+  @override
+  void onClose() {
+    messageSub?.cancel();
+    chatListSub?.cancel();
+    super.onClose();
+  }
 }
+

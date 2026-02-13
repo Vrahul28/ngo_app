@@ -58,23 +58,23 @@ class CustomMemberCard extends StatelessWidget {
                   if (badgeCount > 0)
                     Positioned(
                       right: -6,
-                      top: -6,
+                      top: -23,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
+                          shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 14,
-                          minHeight: 14,
+                          minWidth: 25,
+                          minHeight: 25,
                         ),
                         child: Center(
                           child: Text(
                             badgeCount.toString(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

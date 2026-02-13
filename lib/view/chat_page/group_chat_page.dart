@@ -27,13 +27,26 @@ class _GroupChatPageState extends State<GroupChatPage> {
   final TextEditingController msgCtrl = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    controller.initGroupChat(
-      userId: widget.currentUserId,
-      userName: widget.currentUserName,
-    );
-  }
+void initState() {
+  super.initState();
+
+  controller.initGroupChat(
+    userId: widget.currentUserId,
+    userName: widget.currentUserName,
+  );
+
+  /// mark read AFTER open
+  Future.delayed(const Duration(milliseconds: 700), () {
+    controller.markGroupAsRead();
+  });
+}
+
+@override
+void dispose() {
+  controller.markGroupAsRead();
+  msgCtrl.dispose();
+  super.dispose();
+}
 
   @override
   Widget build(BuildContext context) {

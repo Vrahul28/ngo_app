@@ -4,7 +4,6 @@ import 'package:ngo_app/res/routes_name/routes_name.dart';
 import '../../res/app_colors/app_colors.dart';
 import 'package:get/get.dart';
 import '../../view_models/admin_controller/admin_controller.dart';
-import '../../view_models/chat_controller/group_controller.dart';
 import '../../view_models/dashboard_controller/dashboard_controller.dart';
 import '../campaign_page/user_campaign_page.dart';
 import '../chat_page/chatList_page.dart';
@@ -18,7 +17,6 @@ class MainDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dash= Get.find<DashboardController>();
     final admin= Get.find<AdminController>();
-    final groupController = Get.find<GroupController>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -76,6 +74,9 @@ class MainDashboard extends StatelessWidget {
                 userType: dash.role.value,
                 firebaseUid: dash.userId.value,
                 userName: dash.name.value,
+                adminFirebaseUid: dash.adminFirebaseUid.value,
+                adminName: dash.adminName.value,
+                adminEmail: dash.adminEmail.value,
               ),
               ProfilePage(),
             ],

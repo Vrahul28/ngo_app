@@ -9,9 +9,9 @@ import '../../view_models/user_dashboard_controller/profile_controller.dart';
 import '../../view_models/user_dashboard_controller/user_dashborad_controller.dart';
 
 class MainDashboardBindings extends Bindings{
+  
   @override
   void dependencies() {
-    // TODO: implement dependencies
     Get.lazyPut<UserDashboardController>(() => UserDashboardController(), fenix: true);
     Get.lazyPut<DashboardController>(() => DashboardController(), fenix: true);
     Get.lazyPut<AdminController>(() => AdminController(), fenix: true);

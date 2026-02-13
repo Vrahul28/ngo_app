@@ -1,26 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/chat_controller/chat_controller.dart';
-import '../../res/app_colors/app_colors.dart';
 import '../../view_models/chat_controller/group_controller.dart';
 import '../../widgets/custom_member_card.dart';
 import 'chat_page.dart';
 import 'group_chat_page.dart';
 
-class ChatListPage extends StatelessWidget {
+class ChatListPage extends StatefulWidget {
   final String userType;
   final String firebaseUid;
   final String userName;
+  final String adminFirebaseUid;
+  final String adminName;
+  final String adminEmail;
   const ChatListPage({
     required this.userType,
     required this.firebaseUid,
     required this.userName,
+    required this.adminFirebaseUid,
+    required this.adminName,
+    required this.adminEmail,
     super.key});
 
   @override
+  State<ChatListPage> createState() => _ChatListPageState();
+}
+
+class _ChatListPageState extends State<ChatListPage> {
+  final GroupController controller = Get.find<GroupController>();
+  final chat= Get.find<ChatController>();
+  
+  @override
+  void initState() {
+    super.initState();
+
+    controller.listenGroupUnread(widget.firebaseUid);
+
+    /// start badge listener
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chat.listenChatListUnread(
+        widget.firebaseUid,
+        widget.adminFirebaseUid,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final GroupController controller = Get.find<GroupController>();
-    final chat= Get.find<ChatController>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -30,70 +56,31 @@ class ChatListPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// ADMIN CHAT
-              if (userType == 'User')
+              if (widget.userType == 'User')
                 Obx(() => CustomMemberCard(
-                  heading: 'Admin',
-                  subheading: 'admin@gmail.com',
+                  heading: widget.adminName,
+                  subheading: widget.adminEmail,
                   badgeCount: chat.unreadCount.value,
-                  onTap: () {
-                    chat.resetUnread();
+                  onTap: () async {
                     Get.to(() => ChatPage(
-                      currentUserId: firebaseUid,
-                      currentUserName: userName,
-                      peerUserId: controller.adminFirebaseUid.value,
-                      peerUserName: 'Admin',
+                      currentUserId: widget.firebaseUid,
+                      currentUserName: widget.userName,
+                      peerUserId: widget.adminFirebaseUid,
+                      peerUserName: widget.adminName,
                     ));
                   },
                 )),
-              // Visibility(
-              //   visible: userType == 'User',
-              //     child: CustomMemberCard(
-              //       heading: 'Admin',
-              //       subheading: 'admin@gmail.com',
-              //       icon: Icon(
-              //         Icons.messenger_outline,
-              //         color: AppColors.primary,
-              //       ),
-              //       onTap: () {
-              //         Get.to(() => ChatPage(
-              //           currentUserId: firebaseUid,
-              //           currentUserName: userName,
-              //           peerUserId: controller.adminFirebaseUid.value,
-              //           peerUserName: 'Admin',
-              //         ));
-              //       },
-              //     )
-              // ),
-
-              // CustomMemberCard(
-              //   heading: 'Community Chat',
-              //   subheading: 'Community Chat',
-              //   icon: Icon(
-              //     Icons.messenger_outline,
-              //     color: AppColors.primary,
-              //   ),
-              //   onTap: () {
-              //     Get.to(() => GroupChatPage(
-              //       groupId: GroupController.GROUP_ID,
-              //       currentUserId: firebaseUid,
-              //       currentUserName: userName,
-              //       userRole: userType,
-              //     ));
-              //   },
-              // ),
               /// COMMUNITY CHAT
               Obx(() => CustomMemberCard(
                 heading: 'Community Chat',
                 subheading: 'Community Chat',
                 badgeCount: controller.unreadGroupCount.value,
                 onTap: () {
-                  controller.resetGroupUnread();
-                  debugPrint(controller.unreadGroupCount.value.toString());
                   Get.to(() => GroupChatPage(
                     groupId: GroupController.GROUP_ID,
-                    currentUserId: firebaseUid,
-                    currentUserName: userName,
-                    userRole: userType,
+                    currentUserId: widget.firebaseUid,
+                    currentUserName: widget.userName,
+                    userRole: widget.userType,
                   ));
                 },
               )),

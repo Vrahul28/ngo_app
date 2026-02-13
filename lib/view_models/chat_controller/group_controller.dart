@@ -1,34 +1,162 @@
-import 'dart:io';
-
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
 
-class GroupController extends GetxController{
+class GroupController extends GetxController {
+
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  RxString adminFirebaseUid = ''.obs;
-  RxInt unreadGroupCount = 0.obs;
+
   static const String GROUP_ID = "Community_group";
 
-  @override
-  void onInit() async{
-    super.onInit();
-    fetchAdminFirebaseUid();
+  RxList<QueryDocumentSnapshot> messages = <QueryDocumentSnapshot>[].obs;
+  RxInt unreadGroupCount = 0.obs;
+
+  late String currentUserId;
+  late String currentUserName;
+
+  StreamSubscription? messageSub;
+  StreamSubscription? unreadSub;
+
+  /// ================= INIT GROUP =================
+
+  Future<void> initGroupChat({
+    required String userId,
+    required String userName,
+  }) async {
+
+    currentUserId = userId;
+    currentUserName = userName;
+
+    await _ensureParticipant();
+
+    listenMessages();
   }
 
-  Future<void> fetchAdminFirebaseUid() async {
-    final snapshot = await firestore
-        .collection('users')
-        .where('role', isEqualTo: 'Admin')
-        .limit(1)
+  /// create participant doc if not exists
+  Future<void> _ensureParticipant() async {
+
+    final ref = firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('participants')
+        .doc(currentUserId);
+
+    final doc = await ref.get();
+
+    if (!doc.exists) {
+      await ref.set({
+        'lastSeen': Timestamp(0,0),
+        'name': currentUserName
+      });
+    }
+  }
+
+  /// ================= MESSAGES =================
+
+  void listenMessages() {
+
+    messageSub?.cancel();
+
+    messageSub = firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+      messages.value = snapshot.docs;
+    });
+  }
+
+  /// ================= UNREAD BADGE (CHAT LIST) =================
+
+  void listenGroupUnread(String myUid) async {
+
+    print("LISTENING CHAT ID: $myUid");
+
+    final participantDoc = await firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('participants')
+        .doc(myUid)
         .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      adminFirebaseUid.value = snapshot.docs.first.id;
-    }
+    Timestamp lastSeen =
+        participantDoc.data()?['lastSeen'] ?? Timestamp(0,0);
+
+    unreadSub?.cancel();
+
+    unreadSub = firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('messages')
+        .orderBy('timestamp')
+        .snapshots()
+        .listen((snapshot) {
+
+      int count = 0;
+
+      for (var doc in snapshot.docs) {
+
+        final data = doc.data() as Map<String,dynamic>;
+
+        if (data['senderId'] != myUid &&
+            data['timestamp'] != null &&
+            (data['timestamp'] as Timestamp).compareTo(lastSeen) > 0) {
+          count++;
+        }
+      }
+
+      unreadGroupCount.value = count;
+    });
+  }
+
+  /// ================= MARK READ =================
+
+  Future<void> markGroupAsRead() async {
+
+    await firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('participants')
+        .doc(currentUserId)
+        .set({
+      'lastSeen': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    unreadGroupCount.value = 0;
+  }
+
+  /// ================= SEND =================
+
+  Future<void> sendMessage(
+      String text,
+      String userID,
+      String userName,
+      String userRole,
+      ) async {
+
+    if (text.trim().isEmpty) return;
+
+    await firestore
+        .collection('groups')
+        .doc(GROUP_ID)
+        .collection('messages')
+        .add({
+      'senderId': userID,
+      'senderName': userName,
+      'senderRole': userRole,
+      'message': text.trim(),
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  void onClose() {
+    messageSub?.cancel();
+    unreadSub?.cancel();
+    super.onClose();
   }
 
   Future<void> createGroupIfNotExists(String name, String role, String userId) async {
@@ -78,84 +206,7 @@ class GroupController extends GetxController{
         }}
     );
   }
-
-  Future<String?> getUserRole(String userId) async {
-    final doc = await firestore
-        .collection('groups')
-        .doc(GROUP_ID)
-        .get();
-
-    if (!doc.exists) return null;
-
-    return doc.data()?['members']?[userId]?['role'];
-  }
-
-
-  late String currentUserId;
-  late String currentUserName;
-
-  RxList<QueryDocumentSnapshot> messages = <QueryDocumentSnapshot>[].obs;
-
-  void initGroupChat({
-    required String userId,
-    required String userName,
-  }) {
-    currentUserId = userId;
-    currentUserName = userName;
-
-    listenGroupMessages();
-    resetGroupUnread();
-    // firestore
-    //     .collection('groups')
-    //     .doc(GROUP_ID)
-    //     .collection('messages')
-    //     .orderBy('timestamp', descending: true)
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   messages.value = snapshot.docs;
-    // });
-  }
-
-  void listenGroupMessages() {
-    FirebaseFirestore.instance
-        .collection('groups')
-        .doc(GROUP_ID)
-        .collection('messages')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) {
-      messages.value = snapshot.docs;
-
-      if (snapshot.docChanges.isNotEmpty) {
-        final change = snapshot.docChanges.first;
-        if (change.type == DocumentChangeType.added) {
-          final msg = change.doc.data();
-          if (msg != null && msg['senderId'] != currentUserId) {
-            unreadGroupCount++;
-          }
-        }
-      }
-    });
-  }
-
-  void resetGroupUnread() {
-    unreadGroupCount.value = 0;
-  }
-
-  Future<void> sendMessage(String text,String userID,String userName,String userRole) async {
-    if (text.trim().isEmpty) return;
-
-    await firestore
-        .collection('groups')
-        .doc(GROUP_ID)
-        .collection('messages')
-        .add({
-      'senderId': userID,
-      'senderName': userName,
-      'senderRole': userRole, // ADMIN / USER
-      'message': text.trim(),
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-  }
-
 }
+
+
+

@@ -1,27 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/user_prefernce/user_preference.dart';
 
 
 class DashboardController extends GetxController{
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   RxInt currentIndex= 0.obs;
   RxString role= ''.obs;
   RxString userId= ''.obs;
   RxString name= ''.obs;
+
+//for chat
+  RxString adminFirebaseUid = ''.obs;
+  RxString adminName = ''.obs;
+  RxString adminEmail = ''.obs;
   PageController pageController = PageController(initialPage: 0);
   final user= UserPreference();
 
   @override
   void onInit() {
-    // TODO: implement onInit
     super.onInit();
     getRoleForDash();
-    getIdForDash();
-    getNameForDash();
   }
 
   void getRoleForDash() async{
     role.value= await user.getRole();
+    await fetchAdminFirebaseUid();
+    getIdForDash();
+    getNameForDash();
   }
 
   void getIdForDash() async{
@@ -45,6 +53,22 @@ class DashboardController extends GetxController{
     );
     pageController.jumpToPage(index);
   }
+
+  //fetch admin firebase uid from firestore
+  Future<void> fetchAdminFirebaseUid() async {
+  final doc = await FirebaseFirestore.instance
+      .collection('app_config')
+      .doc('admin')
+      .get();
+
+  if (doc.exists) {
+    adminFirebaseUid.value = doc.data()!['adminUid'];
+    adminName.value = doc.data()!['userName'];
+    adminEmail.value = doc.data()!['adminEmail'];
+
+    
+  }
+}
 
   @override
   void dispose() {
