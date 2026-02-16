@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/user_prefernce/user_preference.dart';
 
+import '../notification_service/notification_service.dart';
+
 
 class DashboardController extends GetxController{
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -25,7 +27,7 @@ class DashboardController extends GetxController{
     getRoleForDash();
   }
 
-  void getRoleForDash() async{
+  Future<void> getRoleForDash() async{
     role.value= await user.getRole();
     await fetchAdminFirebaseUid();
     getIdForDash();
@@ -65,10 +67,20 @@ class DashboardController extends GetxController{
     adminFirebaseUid.value = doc.data()!['adminUid'];
     adminName.value = doc.data()!['userName'];
     adminEmail.value = doc.data()!['adminEmail'];
-
-    
   }
 }
+//
+// Future<void> initNotificationSystem() async {
+//   await getRoleForDash();
+//
+//   // wait until firebase id available
+//   await Future.delayed(const Duration(milliseconds: 500));
+//
+//   if(userId.value.isNotEmpty){
+//     await NotificationService.init(userId.value);              // get FCM token & save
+//     await NotificationService.initialize(userId.value); // listeners
+//   }
+// }
 
   @override
   void dispose() {

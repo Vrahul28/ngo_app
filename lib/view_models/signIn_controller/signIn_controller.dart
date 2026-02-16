@@ -6,6 +6,7 @@ import 'package:ngo_app/view_models/device_utils/device_utils.dart';
 import '../../repo/singIn_repo/signIn_repo.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../../utils/utils.dart';
+import '../notification_service/app_startUp_service.dart';
 import '../user_prefernce/user_preference.dart';
 
 class SignInController extends GetxController{
@@ -110,14 +111,15 @@ class SignInController extends GetxController{
         value['firebaseUid'],
       );
 
-        Utils.showSnackBar('Login Successfully', '',true);
-        Get.toNamed(
-            RoutesName.mainDashBoardPage,
-        );
-
-        clearController();
-
       await firebaseLogin();
+      await AppStartupService.afterLogin(value['firebaseUid']);
+      Get.toNamed(
+        RoutesName.mainDashBoardPage,
+      );
+      Utils.showSnackBar('Login Successfully', '',true);
+      clearController();
+
+
     }).onError((error, stackTrace) {
       isLoading.value= false;
       debugPrint(error.toString());
