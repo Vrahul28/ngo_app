@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ngo_app/res/app_colors/app_colors.dart';
 import 'package:ngo_app/view_models/chat_controller/chat_controller.dart';
 import '../../view_models/chat_controller/group_controller.dart';
+import '../../view_models/dashboard_controller/dashboard_controller.dart';
 import '../../widgets/custom_member_card.dart';
+import '../admin_dashboard/manage_members.dart';
 import 'chat_page.dart';
 import 'group_chat_page.dart';
 
@@ -29,6 +33,7 @@ class ChatListPage extends StatefulWidget {
 class _ChatListPageState extends State<ChatListPage> {
   final GroupController controller = Get.find<GroupController>();
   final chat= Get.find<ChatController>();
+  final dash= Get.find<DashboardController>();
   
   @override
   void initState() {
@@ -84,10 +89,63 @@ class _ChatListPageState extends State<ChatListPage> {
                   ));
                 },
               )),
+              if (widget.userType == 'Admin')
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: chat.getChatList(widget.firebaseUid),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final chats = snapshot.data!.docs;
+                      // if (chats.isEmpty) {
+                      //   return const Center(child: Text("No conversations yet"));
+                      // }
+                      return ListView.builder(
+                        itemCount: chats.length,
+                        itemBuilder: (context, index) {
+                          final data = chats[index];
+                          return CustomMemberCard(
+                            heading: data['name'],
+                            subheading: data['lastMessage'],
+                            badgeCount: data['unreadCount'],
+                            onTap: () async {
+                              /// reset unread
+                              await FirebaseFirestore.instance
+                                  .collection('chat_list')
+                                  .doc(widget.firebaseUid)
+                                  .collection('users')
+                                  .doc(data['uid'])
+                                  .update({'unreadCount': 0});
+                              Get.to(() => ChatPage(
+                                    currentUserId: widget.firebaseUid,
+                                    currentUserName: widget.userName,
+                                    peerUserId: data['uid'],
+                                    peerUserName: data['name'],
+                                  ));
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                )
+   
             ],
           ),
         ),
       ),
+      floatingActionButton: widget.userType == 'Admin'? FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        onPressed: () {
+        Get.to(() => ManageMembers(
+                firebaseUid: dash.userId.value,
+                currentUsername: dash.name.value,
+                pageTitle: "ChatList",
+              ));
+      },
+      child: Icon(Icons.add, color: Colors.white,),
+      ) : SizedBox(),
     );
   }
 }

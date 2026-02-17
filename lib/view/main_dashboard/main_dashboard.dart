@@ -17,94 +17,97 @@ class MainDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dash= Get.find<DashboardController>();
     final admin= Get.find<AdminController>();
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-            'Hope Foundation',
-            style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 18
-            )
-        ),
-        automaticallyImplyLeading: false,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          Obx(
-            () {
-              return Visibility(
-                visible: dash.role.value == 'Admin',
-                child:   Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      admin.fetchTotalCountOfMembers();
-                      admin.totalDonationCount();
-                      Get.toNamed(RoutesName.adminDashboardPage);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:Colors.blue,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                    ),
-                    child: Text('Switch to Admin', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              );
-            },
+        appBar: AppBar(
+          title: Text(
+              'Hope Foundation',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18
+              )
           ),
-
-        ],
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            Obx(
+              () {
+                return Visibility(
+                  visible: dash.role.value == 'Admin',
+                  child:   Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        admin.fetchTotalCountOfMembers();
+                        admin.totalDonationCount();
+                        Get.toNamed(RoutesName.adminDashboardPage);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:Colors.blue,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                      ),
+                      child: Text('Switch to Admin', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                );
+              },
+            ),
+    
+          ],
+        ),
+        body: Obx(
+          () {
+            return PageView(
+              controller: dash.pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (value) {
+                dash.onPageChangedWithOutAnimation(value);
+              },
+              children: [
+                UserDashboard(),
+                UserCampaignPage(),
+                ChatListPage(
+                  userType: dash.role.value,
+                  firebaseUid: dash.userId.value,
+                  userName: dash.name.value,
+                  adminFirebaseUid: dash.adminFirebaseUid.value,
+                  adminName: dash.adminName.value,
+                  adminEmail: dash.adminEmail.value,
+                ),
+                ProfilePage(),
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: Obx(
+          () {
+            return BottomNavigationBar(
+              currentIndex: dash.currentIndex.value,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: Colors.grey,
+              backgroundColor: Colors.white,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              unselectedLabelStyle: const TextStyle(fontSize: 12),
+              onTap: (index) {
+                dash.updateTabSelection(index);
+              },
+              items: const [
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.houseChimney), label: 'Dashboard'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.bullhorn), label: 'Campaigns'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.comments), label: 'Chat'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.userCircle), label: 'Profile'),
+              ],
+            );
+          },
+        )
       ),
-      body: Obx(
-        () {
-          return PageView(
-            controller: dash.pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (value) {
-              dash.onPageChangedWithOutAnimation(value);
-            },
-            children: [
-              UserDashboard(),
-              UserCampaignPage(),
-              ChatListPage(
-                userType: dash.role.value,
-                firebaseUid: dash.userId.value,
-                userName: dash.name.value,
-                adminFirebaseUid: dash.adminFirebaseUid.value,
-                adminName: dash.adminName.value,
-                adminEmail: dash.adminEmail.value,
-              ),
-              ProfilePage(),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: Obx(
-        () {
-          return BottomNavigationBar(
-            currentIndex: dash.currentIndex.value,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: Colors.grey,
-            backgroundColor: Colors.white,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            unselectedLabelStyle: const TextStyle(fontSize: 12),
-            onTap: (index) {
-              dash.updateTabSelection(index);
-            },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.houseChimney), label: 'Dashboard'),
-              BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.bullhorn), label: 'Campaigns'),
-              BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.comments), label: 'Chat'),
-              BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.userCircle), label: 'Profile'),
-            ],
-          );
-        },
-      )
     );
   }
 }

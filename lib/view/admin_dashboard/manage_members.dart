@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/admin_controller/admin_controller.dart';
 import '../../data/exeception/status.dart';
-import '../../res/app_colors/app_colors.dart';
 import '../../widgets/custom_member_card.dart';
 import '../chat_page/chat_page.dart';
 
@@ -10,9 +9,11 @@ import '../chat_page/chat_page.dart';
 class ManageMembers extends StatelessWidget {
   final String firebaseUid;
   final String currentUsername;
+  final String? pageTitle;
   const ManageMembers({
     required this.firebaseUid,
     required this.currentUsername,
+    this.pageTitle,
     super.key});
 
   @override
@@ -31,25 +32,6 @@ class ManageMembers extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Container(
-              //   height: MediaQuery.of(context).size.height * 0.4,
-              //   padding: const EdgeInsets.all(16),
-              //   decoration: BoxDecoration(color: Colors.greenAccent, borderRadius: BorderRadius.circular(12)),
-              //   child: StreamBuilder<QuerySnapshot>(
-              //     stream: user.getAllUsers(),
-              //     builder: (context, snapshot) {
-              //       if (!snapshot.hasData) return CircularProgressIndicator();
-              //       return ListView(
-              //         children: snapshot.data!.docs.map((doc) {
-              //           return ListTile(
-              //             title: Text(doc["name"]),
-              //             subtitle: Text(doc["email"]),
-              //           );
-              //         }).toList(),
-              //       );
-              //     },
-              //   )
-              // ),
               Obx(() {
                 switch (users.rxRequestStatus.value) {
                   case Status.LOADING:
@@ -74,28 +56,19 @@ class ManageMembers extends StatelessWidget {
                           onCallTap: () {
                             users.launchPhoneDialer(member.contactNumber!);
                           },
-                          // icon: Icon(
-                          //   Icons.phone,
-                          //   color: AppColors.primary,
-                          // ),
                           onTap: () {
-                            debugPrint(firebaseUid);
-                            debugPrint(currentUsername);
-                            debugPrint(member.fireBaseId);
-                            Get.to(() => ChatPage(
+                            pageTitle == "ChatList" ? Get.to(() => ChatPage(
                               currentUserId: firebaseUid,
                               currentUserName: currentUsername,
                               peerUserId: member.fireBaseId!,
                               peerUserName: member.name!,
-                            ));
+                            )) : null;
                           },
                         );
                       },
                     );
                 }
               }),
-
-
             ],
           ),
         ),

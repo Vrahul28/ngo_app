@@ -131,6 +131,13 @@ class _ChatPageState extends State<ChatPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         controller.sendMessage(_chatController.text, widget.currentUserId,widget.peerUserId,controller.chatId.value);
+                        controller.updateChatList(
+                          senderId: widget.currentUserId,
+                          receiverId: widget.peerUserId,
+                          senderName: widget.currentUserName,
+                          receiverName: widget.peerUserName,
+                          message: _chatController.text.trim(),
+                        );
                         _chatController.clear();
                       },
                       style: ElevatedButton.styleFrom(

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 
@@ -88,7 +89,7 @@ class ChatController extends GetxController {
 
     String id = getChatId(myUid, otherUid);
 
-    print("LISTENING CHAT ID: $id");
+    debugPrint("LISTENING CHAT ID: $id");
 
     // get lastSeen
     final participantDoc = await firestore
@@ -155,7 +156,58 @@ class ChatController extends GetxController {
       'lastMessage': text,
       'lastMessageTime': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+
+    
   }
+
+  Future<void> updateChatList({
+  required String senderId,
+  required String receiverId,
+  required String senderName,
+  required String receiverName,
+  required String message,
+}) async {
+
+  final time = FieldValue.serverTimestamp();
+
+  /// sender chat list
+  await FirebaseFirestore.instance
+      .collection('chat_list')
+      .doc(senderId)
+      .collection('users')
+      .doc(receiverId)
+      .set({
+    'uid': receiverId,
+    'name': receiverName,
+    'lastMessage': message,
+    'timestamp': time,
+    'unreadCount': 0,
+  }, SetOptions(merge: true));
+
+  /// receiver chat list (increase unread)
+  await FirebaseFirestore.instance
+      .collection('chat_list')
+      .doc(receiverId)
+      .collection('users')
+      .doc(senderId)
+      .set({
+    'uid': senderId,
+    'name': senderName,
+    'lastMessage': message,
+    'timestamp': time,
+    'unreadCount': FieldValue.increment(1),
+  }, SetOptions(merge: true));
+}
+
+Stream<QuerySnapshot> getChatList(String currentUserId) {
+  return FirebaseFirestore.instance
+      .collection('chat_list')
+      .doc(currentUserId)
+      .collection('users')
+      .orderBy('timestamp', descending: true)
+      .snapshots();
+}
+
 
   @override
   void onClose() {

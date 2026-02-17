@@ -1,10 +1,7 @@
 import 'dart:convert';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import '../../view/chat_page/chat_page.dart';
 import '../../view/chat_page/group_chat_page.dart';
 
@@ -49,33 +46,35 @@ class LocalNotificationService {
 
     },
   );
-  }
+}
 
 
   // show notification when message comes in foreground
   static Future<void> showNotification(RemoteMessage message) async {
 
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'chat_channel',
-      'Chat Messages',
-      channelDescription: 'Chat notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-    );
-
-    const NotificationDetails details = NotificationDetails(android: androidDetails);
-
-   await _notifications.show(
-  id: message.hashCode,
-  title: message.notification?.title ?? "New Message",
-  body: message.notification?.body ?? "",
-  notificationDetails: details,
-  payload: jsonEncode(message.data),
+  const AndroidNotificationDetails androidDetails =
+      AndroidNotificationDetails(
+    'chat_channel',
+    'Chat Messages',
+    channelDescription: 'Chat notifications',
+    importance: Importance.max,
+    priority: Priority.high,
+    playSound: true,
   );
-  }
 
-  
+  const NotificationDetails details =
+      NotificationDetails(android: androidDetails);
+
+  final data = message.data;
+
+  await _notifications.show(
+    id: message.hashCode,
+    title: data['senderName'] ?? "New Message",
+    body: data['message'] ?? "",
+    notificationDetails: details,
+    payload: jsonEncode(data),
+  );
+}
+
 
 }

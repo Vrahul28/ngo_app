@@ -14,11 +14,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // initialize local notification inside background isolate
-  await LocalNotificationService.initialize();
-  // show notification when app is killed/background
-  await LocalNotificationService.showNotification(message);
-
   debugPrint("Background Notification Received: ${message.messageId}");
 }
 

@@ -7,6 +7,7 @@ import '../../repo/singIn_repo/signIn_repo.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../../utils/utils.dart';
 import '../notification_service/app_startUp_service.dart';
+import '../notification_service/notification_service.dart';
 import '../user_prefernce/user_preference.dart';
 
 class SignInController extends GetxController{
@@ -113,6 +114,7 @@ class SignInController extends GetxController{
 
       await firebaseLogin();
       await AppStartupService.afterLogin(value['firebaseUid']);
+      await NotificationService.initialize(value['firebaseUid']);
       Get.toNamed(
         RoutesName.mainDashBoardPage,
       );
