@@ -113,7 +113,7 @@ class SignInController extends GetxController{
       );
 
       await firebaseLogin();
-      await AppStartupService.afterLogin(value['firebaseUid']);
+      // await AppStartupService.afterLogin(value['firebaseUid']);
       await NotificationService.initialize(value['firebaseUid']);
       Get.toNamed(
         RoutesName.mainDashBoardPage,

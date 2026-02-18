@@ -4,36 +4,36 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../view/chat_page/chat_page.dart';
 import '../../view/chat_page/group_chat_page.dart';
-import '../user_prefernce/user_preference.dart';
 import 'local_notification_service.dart';
 
 class NotificationService {
 
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  static Future init(String uid) async {
+  // static Future init(String uid, String userName) async {
 
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+  //   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // Android 13+
-    await messaging.requestPermission();
+  //   // Android 13+
+  //   await messaging.requestPermission();
 
-    String? token = await messaging.getToken();
+  //   String? token = await messaging.getToken();
 
-    debugPrint("FCM TOKEN: $token");
+  //   debugPrint("FCM TOKEN: $token");
 
-    if (token == null) return;
+  //   if (token == null) return;
 
-    // 🔥 CREATE USER DOCUMENT IF NOT EXISTS
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .set({
-      'uid': uid,
-      'fcmToken': token,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
+  //   // 🔥 CREATE USER DOCUMENT IF NOT EXISTS
+  //   await FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(uid)
+  //       .set({
+  //     'uid': uid,
+  //     'name': userName,
+  //     'fcmToken': token,
+  //     'updatedAt': FieldValue.serverTimestamp(),
+  //   }, SetOptions(merge: true));
+  // }
 
   // Initialize all listeners
   static Future<void> initialize(String currentUserId) async {
@@ -49,7 +49,9 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint("FOREGROUND MESSAGE RECEIVED");
       // SHOW LOCAL NOTIFICATION
-      LocalNotificationService.showNotification(message);
+      if (message.notification != null) {
+        LocalNotificationService.showNotification(message);
+      }
    });
 
     // When app is in BACKGROUND and user taps notification
@@ -84,11 +86,11 @@ class NotificationService {
     } else if (type == "group") {
 
       Get.to(() => GroupChatPage(
-                    groupId: data['groupId'],
-                    currentUserId: currentUserId,
-                    currentUserName: data['senderName'],
-                    userRole: data['userRole'],
-                  ));
+            groupId: data['groupId'],
+            currentUserId: currentUserId,
+            currentUserName: data['senderName'],
+            userRole: data['userRole'],
+          ));
     }
   }
 }

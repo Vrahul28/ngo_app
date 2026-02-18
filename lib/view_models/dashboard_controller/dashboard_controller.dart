@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/user_prefernce/user_preference.dart';
 
-import '../notification_service/notification_service.dart';
 
 
 class DashboardController extends GetxController{

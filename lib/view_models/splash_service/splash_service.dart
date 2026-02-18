@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:ngo_app/view_models/auth_service/auth_service.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../notification_service/app_startUp_service.dart';
 import '../user_prefernce/user_preference.dart';
@@ -48,7 +44,7 @@ class SplashService {
     // }
 
     // 🔥 attach token on auto login
-    await AppStartupService.afterLogin(firebaseUid);
+    // await AppStartupService.afterLogin(firebaseUid);
 
     Get.offAllNamed(RoutesName.mainDashBoardPage);
   }

@@ -15,6 +15,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   debugPrint("Background Notification Received: ${message.messageId}");
+  // VERY IMPORTANT
+  await LocalNotificationService.initialize();
+
+  // debugPrint("Background Notification Received: ${message.messageId}");
+
+  // SHOW NOTIFICATION IN BACKGROUND
+  // await LocalNotificationService.showNotification(message);
 }
 
 Future<void> main() async {
@@ -26,14 +33,13 @@ Future<void> main() async {
   );
 
   /// 2️⃣ Initialize Local Notification Channel
-  await LocalNotificationService.initialize();
+  // await LocalNotificationService.initialize();
 
   /// 3️⃣ Register background handler (MUST BE BEFORE runApp)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   /// 4️⃣ Ask notification permission (Android 13+ + iOS)
-  NotificationSettings settings =
-  await FirebaseMessaging.instance.requestPermission(
+  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
     alert: true,
     badge: true,
     sound: true,
