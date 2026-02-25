@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../res/app_colors/app_colors.dart';
-import '../../../res/routes_name/routes_name.dart';
 import '../../../view_models/admin_controller/campaign_controller.dart';
 import '../../../widgets/custom_textfields.dart';
 
@@ -47,6 +46,7 @@ class CampaignAddPage extends StatelessWidget {
                       controller: cam.startDate.value,
                       decoration: InputDecoration(
                           labelText: 'Start Date',
+                          labelStyle: TextStyle(color: AppColors.blackColor),
                           suffixIcon: IconButton(
                               onPressed: () {
                                 cam.openDatePicker(context, cam.startDate.value);
@@ -67,6 +67,7 @@ class CampaignAddPage extends StatelessWidget {
                       controller: cam.endDate.value,
                       decoration: InputDecoration(
                           labelText: 'End Date',
+                          labelStyle: TextStyle(color: AppColors.blackColor),
                           suffixIcon: IconButton(
                               onPressed: () {
                                 cam.openDatePicker(context,cam.endDate.value,);
@@ -86,13 +87,12 @@ class CampaignAddPage extends StatelessWidget {
                   Obx(
                     () {
                       return ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async{
+                          
                           if(args['edit']){
-                            cam.editCampaign(args['id'],cam.title.value.text, cam.des.value.text, double.parse(cam.amount.value.text), cam.startDate.value.text, cam.endDate.value.text);
-                            Get.toNamed(RoutesName.campaignPage);
+                            await cam.editCampaign(args['id'],cam.title.value.text, cam.des.value.text, double.parse(cam.amount.value.text), cam.startDate.value.text, cam.endDate.value.text);
                           }else{
-                            cam.addCampaign(cam.title.value.text, cam.des.value.text, double.parse(cam.amount.value.text), cam.startDate.value.text, cam.endDate.value.text);
-                            Get.toNamed(RoutesName.campaignPage);
+                           await cam.addCampaign(cam.title.value.text, cam.des.value.text, double.parse(cam.amount.value.text), cam.startDate.value.text, cam.endDate.value.text);
                           }
 
                         },
@@ -102,7 +102,7 @@ class CampaignAddPage extends StatelessWidget {
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: cam.isLoading.value ? const CircularProgressIndicator() : const Text('Add Campaign', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        child: cam.isLoading.value ? const CircularProgressIndicator(color: AppColors.background,) : const Text('Add Campaign', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                       );
                     },
                   ),

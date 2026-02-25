@@ -20,6 +20,7 @@ class CampaignRepo {
   Future<dynamic> deleteCampaign(String id) async{
     String url= '${Urls.deleteCampaignAPI}/$id';
     final response= await _api.deleteAPI(url);
+    debugPrint(response.toString());
     return response;
   }
 

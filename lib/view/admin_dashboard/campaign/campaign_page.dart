@@ -18,6 +18,7 @@ class CampaignPage extends StatefulWidget {
 
 class _CampaignPageState extends State<CampaignPage> {
   final cam= Get.find<CampaignController>();
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,8 +29,13 @@ class _CampaignPageState extends State<CampaignPage> {
         backgroundColor: Colors.white,
         actions: [
           IconButton(
-            onPressed: () {
-              Get.toNamed(RoutesName.campaignAddPage);
+            onPressed: () async{
+              Get.toNamed(
+                RoutesName.campaignAddPage,
+                arguments: {
+                  "edit": false,
+                }
+                );
             },
             icon: const Icon(Icons.add_box_outlined, color: Colors.black),
           ),
@@ -40,19 +46,15 @@ class _CampaignPageState extends State<CampaignPage> {
           padding: const EdgeInsets.only(left: 15.0,right: 15.0,top: 5.0, bottom: 10.0),
           child: Obx(
                 () {
-              switch (cam.rxRequestStatus.value) {
-                case Status.LOADING:
-                  return SizedBox(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                case Status.ERROR:
-                  return SizedBox(
-                    child: Center(child: Text(cam.error.toString())),
-                  );
-                case Status.COMPLETED:
-                  return cam.userCampaign.isEmpty ? SizedBox(
-                    child: Center(child: Text('No Campaign found')),
-                  ): ListView.builder(
+                  if (cam.rxRequestStatus.value == Status.LOADING) {
+                   return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (cam.userCampaign.isEmpty) {
+                  return const Center(child: Text('No Campaign found'));
+                  }
+
+                  return ListView.builder(
                     itemCount: cam.userCampaign.length,
                     itemBuilder: (context, index) {
                       final hist= cam.userCampaign[index];
@@ -113,13 +115,9 @@ class _CampaignPageState extends State<CampaignPage> {
                                           backgroundColor: AppColors.primary,
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(12)))
                                         ),
-                                        onPressed: () async{
-                                          await cam.deleteCampaign(hist.id ?? '').then((value) {
-                                            setState(() {
-                                              debugPrint(hist.id);
-                                              Get.back(); 
-                                            });
-                                          },);
+                                        onPressed: () async{ 
+                                          Get.back();                               
+                                          await cam.deleteCampaign(hist.id ?? '');
                                         },
                                         child: Text(
                                             'Delete',
@@ -152,9 +150,7 @@ class _CampaignPageState extends State<CampaignPage> {
                       );
                     },
                   );
-              }
-
-            },
+                }
           ),
         ),
       ),

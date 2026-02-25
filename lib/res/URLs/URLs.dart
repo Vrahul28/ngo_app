@@ -23,7 +23,7 @@ class Urls {
   //Campaign
   static const String addCampaignAPI= '$baseUrl/api/campaign/add';
   static const String editCampaignAPI= '$baseUrl/api/campaign/edit';
-  static const String deleteCampaignAPI= '$baseUrl/api/campaign/delete';
+  static const String deleteCampaignAPI= '$baseUrl/api/campaign';
   static const String getAllCampaignAPI= '$baseUrl/api/campaign/active';
   static const String getAllUserCampaignAPI= '$baseUrl/api/campaign/list';
 }
