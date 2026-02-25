@@ -18,12 +18,12 @@ class DeviceUtils extends GetxController{
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfo.androidInfo;
       deviceName.value= "${androidInfo.brand} ${androidInfo.model}";
-      deviceId.value= androidInfo.id ?? androidInfo.fingerprint;
+      deviceId.value= androidInfo.id;
     }
 
     if (Platform.isIOS) {
       final iosInfo = await _deviceInfo.iosInfo;
-      deviceName.value= iosInfo.name ?? "iPhone";
+      deviceName.value= iosInfo.name;
       deviceId.value= iosInfo.identifierForVendor ?? "IOS-UNKNOWN";
     }
   }

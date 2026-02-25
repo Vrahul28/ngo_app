@@ -24,7 +24,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)]),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)]),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -67,10 +67,10 @@ class ProfilePage extends StatelessWidget {
                     icon: const Icon(FontAwesomeIcons.signOutAlt),
                     label: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.redError.withOpacity(0.1),
+                      backgroundColor: AppColors.redError.withValues(alpha: 0.1),
                       foregroundColor: AppColors.redError,
                       minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppColors.redError.withOpacity(0.5))),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppColors.redError.withValues(alpha: 0.5))),
                       elevation: 0,
                     ),
                   ),

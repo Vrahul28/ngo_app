@@ -32,7 +32,7 @@ class UserDashboard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -45,7 +45,7 @@ class UserDashboard extends StatelessWidget {
                               Text('₹ ${user.totalDonation.value}', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: Colors.white)),
                             ],
                           ),
-                          Icon(FontAwesomeIcons.handsHelping, size: 50, color: Colors.white.withOpacity(0.8)),
+                          Icon(FontAwesomeIcons.handsHelping, size: 50, color: Colors.white.withValues(alpha: 0.8)),
                         ],
                       ),
                     );
@@ -56,17 +56,17 @@ class UserDashboard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.1),
+                    color: AppColors.warning.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.warning),
-                    boxShadow: [BoxShadow(color: AppColors.warning.withOpacity(0.1), blurRadius: 5)],
+                    boxShadow: [BoxShadow(color: AppColors.warning.withValues(alpha: 0.1), blurRadius: 5)],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(FontAwesomeIcons.bell, size: 20, color: AppColors.warning.withOpacity(0.8)),
+                          Icon(FontAwesomeIcons.bell, size: 20, color: AppColors.warning.withValues(alpha: 0.8)),
                           const SizedBox(width: 8),
                           const Text('Recurring Donation Reminder', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF92400E))),
                         ],

@@ -16,7 +16,7 @@ class CustomCardPaymentHistoryUser extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)]),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5)]),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

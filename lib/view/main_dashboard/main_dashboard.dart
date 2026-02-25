@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ngo_app/res/routes_name/routes_name.dart';
+import 'package:ngo_app/view_models/chat_controller/chat_controller.dart';
 import '../../res/app_colors/app_colors.dart';
 import 'package:get/get.dart';
 import '../../view_models/admin_controller/admin_controller.dart';
@@ -17,6 +18,7 @@ class MainDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dash= Get.find<DashboardController>();
     final admin= Get.find<AdminController>();
+    final chat = Get.find<ChatController>();
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -98,11 +100,49 @@ class MainDashboard extends StatelessWidget {
               onTap: (index) {
                 dash.updateTabSelection(index);
               },
-              items: const [
+              items: [
                 BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.houseChimney), label: 'Dashboard'),
                 BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.bullhorn), label: 'Campaigns'),
-                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.comments), label: 'Chat'),
-                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.userCircle), label: 'Profile'),
+                BottomNavigationBarItem(
+                label: 'Chat',
+                icon: Obx(() {
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(FontAwesomeIcons.comments),
+                      /// badge
+                      if (chat.unreadCount.value > 0)
+                        Positioned(
+                          right: -10,
+                          top: -8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Text(
+                              chat.unreadCount.value > 99
+                                  ? "99+"
+                                  : chat.unreadCount.value.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
+              ),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
               ],
             );
           },

@@ -23,13 +23,13 @@ class Members {
   Members.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -60,17 +60,17 @@ class Data {
     if (json['data'] != null) {
       data = <Datum>[];
       json['data'].forEach((v) {
-        data!.add(new Datum.fromJson(v));
+        data!.add(Datum.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['page'] = this.page;
-    data['pageSize'] = this.pageSize;
-    data['totalRecords'] = this.totalRecords;
-    data['totalPages'] = this.totalPages;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['page'] = page;
+    data['pageSize'] = pageSize;
+    data['totalRecords'] = totalRecords;
+    data['totalPages'] = totalPages;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -113,15 +113,15 @@ class Datum {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['contactNumber'] = this.contactNumber;
-    data['passwordHash'] = this.passwordHash;
-    data['isEmailVerified'] = this.isEmailVerified;
-    data['createdAt'] = this.createdAt;
-    data['fireBaseId'] = this.fireBaseId;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['email'] = email;
+    data['contactNumber'] = contactNumber;
+    data['passwordHash'] = passwordHash;
+    data['isEmailVerified'] = isEmailVerified;
+    data['createdAt'] = createdAt;
+    data['fireBaseId'] = fireBaseId;
     return data;
   }
 

@@ -99,7 +99,7 @@ class GroupController extends GetxController {
 
       for (var doc in snapshot.docs) {
 
-        final data = doc.data() as Map<String,dynamic>;
+        final data = doc.data();
 
         if (data['senderId'] != myUid &&
             data['timestamp'] != null &&

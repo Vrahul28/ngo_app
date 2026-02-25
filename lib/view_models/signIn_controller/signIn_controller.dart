@@ -6,7 +6,6 @@ import 'package:ngo_app/view_models/device_utils/device_utils.dart';
 import '../../repo/singIn_repo/signIn_repo.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../../utils/utils.dart';
-import '../notification_service/app_startUp_service.dart';
 import '../notification_service/notification_service.dart';
 import '../user_prefernce/user_preference.dart';
 
@@ -78,8 +77,9 @@ class SignInController extends GetxController{
       isLoading.value= false;
       // debugPrint(value['accessToken']);
       // debugPrint( userId.value );
-
-      if(value['message'] == 'Email not Verified'){
+      if(value['status'] == 400){
+        Utils.showSnackBar(value['message'], '',true);
+      }else if(value['message'] == 'Email not Verified'){
         Utils.showSnackBar('Email not verified', 'Check Your Email For OTP',true);
         verifyEmail(emailController.value.text);
         Get.toNamed(
@@ -89,39 +89,37 @@ class SignInController extends GetxController{
             }
         );
         clearController();
+      }else{
+        await firebaseLogin();
+
+            // debugPrint(value['id'].toString());
+            // debugPrint(value['name'].toString());
+            // debugPrint(value['role'].toString());
+            // debugPrint(value['firebaseUid'].toString());
+            // debugPrint(value['accessToken'].toString());
+            // debugPrint(value['refreshToken'].toString()); 
+
+            userId.value = value['id'].toString();
+            userName.value = value['name'].toString();
+            userRole.value = value['role'].toString();
+
+            user.saveUser(
+              emailController.value.text,
+              value['accessToken'],
+              value['id'],
+              value['name'],
+              value['role'],
+              value['refreshToken'],
+              value['firebaseUid'],
+            );
+
+            
+            // await AppStartupService.afterLogin(value['firebaseUid']);
+            await NotificationService.initialize(value['firebaseUid']);
+            Get.toNamed(RoutesName.mainDashBoardPage);
+            Utils.showSnackBar('Login Successfully', '', true);
+            clearController();
       }
-
-      debugPrint(value['id'].toString());
-      debugPrint(value['name'].toString());
-      debugPrint(value['role'].toString());
-      debugPrint(value['firebaseUid'].toString());
-      debugPrint(value['accessToken'].toString());
-      debugPrint(value['refreshToken'].toString());
-
-        userId.value = value['id'].toString();
-        userName.value = value['name'].toString();
-        userRole.value = value['role'].toString();
-
-      user.saveUser(
-        emailController.value.text,
-        value['accessToken'],
-        value['id'],
-        value['name'],
-        value['role'],
-        value['refreshToken'],
-        value['firebaseUid'],
-      );
-
-      await firebaseLogin();
-      // await AppStartupService.afterLogin(value['firebaseUid']);
-      await NotificationService.initialize(value['firebaseUid']);
-      Get.toNamed(
-        RoutesName.mainDashBoardPage,
-      );
-      Utils.showSnackBar('Login Successfully', '',true);
-      clearController();
-
-
     }).onError((error, stackTrace) {
       isLoading.value= false;
       debugPrint(error.toString());

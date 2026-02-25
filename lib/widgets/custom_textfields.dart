@@ -18,10 +18,15 @@ class CustomTextFields extends StatelessWidget {
       controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
-        labelText: hintText,
+        hintText: hintText,
+        hintStyle: TextStyle(
+          color: AppColors.blackColor
+        ),
         border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide(color: AppColors.primary)),
+            borderRadius: BorderRadius.all(Radius.circular(12)), 
+            borderSide: BorderSide(color: AppColors.primary)
+            ),
       ),
     );
   }

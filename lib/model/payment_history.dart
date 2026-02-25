@@ -20,17 +20,17 @@ class PaymentHistoryModel {
     if (json['data'] != null) {
       data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(Data.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['page'] = this.page;
-    data['pageSize'] = this.pageSize;
-    data['totalRecords'] = this.totalRecords;
-    data['totalPages'] = this.totalPages;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['page'] = page;
+    data['pageSize'] = pageSize;
+    data['totalRecords'] = totalRecords;
+    data['totalPages'] = totalPages;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -67,14 +67,14 @@ class Data {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['paymentId'] = this.paymentId;
-    data['amount'] = this.amount;
-    data['paymentDate'] = this.paymentDate;
-    data['userId'] = this.userId;
-    data['userName'] = this.userName;
-    data['userEmail'] = this.userEmail;
-    data['userMobile'] = this.userMobile;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['paymentId'] = paymentId;
+    data['amount'] = amount;
+    data['paymentDate'] = paymentDate;
+    data['userId'] = userId;
+    data['userName'] = userName;
+    data['userEmail'] = userEmail;
+    data['userMobile'] = userMobile;
     return data;
   }
 }

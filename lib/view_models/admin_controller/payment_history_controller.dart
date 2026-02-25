@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../data/exeception/status.dart';
 import '../../model/payment_history.dart';
 import '../../repo/payment_history_repo/payment_history_repo.dart';
-import '../dashboard_controller/dashboard_controller.dart';
 
 class PaymentHistoryController extends GetxController{
 

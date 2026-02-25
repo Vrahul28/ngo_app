@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import '../../res/routes_name/routes_name.dart';
-import '../notification_service/app_startUp_service.dart';
 import '../user_prefernce/user_preference.dart';
 
 class SplashService {
@@ -28,7 +27,7 @@ class SplashService {
   void login() async {
 
     String email = await user.getEmail();
-    String firebaseUid = await user.getFirebaseId();
+    // String firebaseUid = await user.getFirebaseId();
 
     if (email.isEmpty) {
       Get.offAllNamed(RoutesName.signInPage);

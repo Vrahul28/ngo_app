@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../../data/exeception/status.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../../view_models/admin_controller/campaign_controller.dart';
-import '../../view_models/payment_controller/payment_controller.dart';
 import '../../widgets/custom_campaign_card_user.dart';
 
 

@@ -187,7 +187,7 @@ class NetworkApiService extends BasicApiService {
     dynamic responseData;
     var uri = Uri.parse(URL);
     try {
-      final request = await http.MultipartRequest('POST', uri);
+      final request = http.MultipartRequest('POST', uri);
       request.fields.addAll(data);
       request.files.add(
         http.MultipartFile(

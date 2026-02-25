@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:ngo_app/model/campaign_model.dart';
 import 'package:ngo_app/repo/campaign_repo/campaign_repo.dart';
 import 'package:ngo_app/view_models/user_prefernce/user_preference.dart';
-
 import '../../data/exeception/status.dart';
 import '../../utils/utils.dart';
 
@@ -31,13 +30,12 @@ class CampaignController extends GetxController{
 
   @override
   void onInit() {
-    // TODO: implement onInit
-    super.onInit();
     fetchUser();
-
+    super.onInit();
   }
 
   void fetchUser() async{
+    await getAllCampaign();
     userRole.value= await user.getRole();
     if(userRole.value == 'Admin'){
       await getAllUserCampaign();
@@ -127,35 +125,54 @@ class CampaignController extends GetxController{
     });
   }
 
-  void deleteCampaign(String id){
+ Future<void> deleteCampaign(String id) async{
     isLoading.value= true;
-
-    _api.deleteCampaign(id).then((value) {
-      isLoading.value= false;
+    try {
+      final value = await _api.deleteCampaign(id);
+      isLoading.value = false;
       debugPrint(value['message']);
       setRequestStatus(Status.COMPLETED);
-      Utils.showSnackBar(value['message'], '',true);
-      getAllCampaign();
-    }).onError((error, stackTrace) {
-      isLoading.value= false;
+      Utils.showSnackBar(value['message'], '', true);
+    } catch (e) {
+      isLoading.value = false;
       debugPrint(error.toString());
       setRequestStatus(Status.ERROR);
-    });
+    }
   }
 
-  Future<void> getAllCampaign() async{
-    isLoading.value= true;
+  // Future<void> getAllCampaign() async{
+  //   isLoading.value= true;
 
-    _api.getAllCampaign().then((value) {
-      isLoading.value= false;
-      campaign.value = value.data ?? [];
-      setRequestStatus(Status.COMPLETED);
-    }).onError((error, stackTrace) {
-      isLoading.value= false;
-      debugPrint(error.toString());
-      setRequestStatus(Status.ERROR);
-    });
-  }
+  //   _api.getAllCampaign().then((value) {
+  //     isLoading.value= false;
+  //     campaign.value = value.data ?? [];
+  //     setRequestStatus(Status.COMPLETED);
+  //   }).onError((error, stackTrace) {
+  //     isLoading.value= false;
+  //     debugPrint(error.toString());
+  //     setRequestStatus(Status.ERROR);
+  //   });
+  // }
+
+  Future<void> getAllCampaign() async {
+
+  setRequestStatus(Status.LOADING);
+
+  _api.getAllCampaign().then((value) {
+
+    // final List<Data> list = (value.data as List)
+    //           .map((e) => Data.fromJson(e))
+    //           .toList();
+
+     campaign.value = value.data ?? [];
+    /// 🔥 THIS LINE FIXES YOUR ENTIRE PROBLEM
+    // userCampaign.assignAll(campaign);
+    setRequestStatus(Status.COMPLETED);
+  }).onError((error, stackTrace) {
+    setRequestStatus(Status.ERROR);
+    debugPrint(error.toString());
+  });
+}
 
   Future<void> getAllUserCampaign() async{
     isLoading.value= true;

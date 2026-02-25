@@ -77,7 +77,6 @@ class _CampaignPageState extends State<CampaignPage> {
                                 cam.amount.value.text = hist.targetAmount.toString();
                                 cam.startDate.value.text = hist.startDate ?? '';
                                 cam.endDate.value.text = hist.endDate ?? '';
-
                                 Get.toNamed(
                                   RoutesName.campaignAddPage,
                                   arguments: {
@@ -114,8 +113,13 @@ class _CampaignPageState extends State<CampaignPage> {
                                           backgroundColor: AppColors.primary,
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.all(Radius.circular(12)))
                                         ),
-                                        onPressed: () {
-                                          cam.deleteCampaign(hist.id ?? '');
+                                        onPressed: () async{
+                                          await cam.deleteCampaign(hist.id ?? '').then((value) {
+                                            setState(() {
+                                              debugPrint(hist.id);
+                                              Get.back(); 
+                                            });
+                                          },);
                                         },
                                         child: Text(
                                             'Delete',
@@ -156,6 +160,4 @@ class _CampaignPageState extends State<CampaignPage> {
       ),
     );
   }
-
-
 }

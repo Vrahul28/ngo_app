@@ -115,7 +115,7 @@ class ChatController extends GetxController {
       int count = 0;
 
       for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
 
         if (data['senderId'] != myUid &&
             data['timestamp'] != null &&

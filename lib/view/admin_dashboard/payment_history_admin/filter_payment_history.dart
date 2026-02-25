@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:ngo_app/res/routes_name/routes_name.dart';
 import '../../../res/app_colors/app_colors.dart';
 import '../../../view_models/admin_controller/payment_history_controller.dart';
-import '../../../widgets/custom_card_payment_history.dart';
 import '../../../widgets/custom_textfields.dart';
 
 class FilterPaymentHistory extends StatelessWidget {

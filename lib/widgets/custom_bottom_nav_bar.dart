@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../res/app_colors/app_colors.dart';
-import '../view/campaign_page/user_campaign_page.dart';
-import '../view/chat_page/chat_page.dart';
-import '../view/profile_page/profile_page.dart';
-import '../view/user_dashboard/user_dashboard.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   const CustomBottomNavBar({super.key});

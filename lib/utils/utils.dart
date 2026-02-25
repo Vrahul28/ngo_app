@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../res/app_colors/app_colors.dart';
 
 class Utils {
-  static  showSnackBar(String title, String message, bool success){
+  static  void showSnackBar(String title, String message, bool success){
     Get.snackbar(
         title,
         message,

@@ -97,7 +97,7 @@ class AddNewMember extends StatelessWidget {
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: ad.isLoading.value ? CircularProgressIndicator(color: Colors.white) : const Text('ADD DONATION', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      child: ad.isLoading.value ? CircularProgressIndicator(color: Colors.white) : const Text('ADD DONATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                     );
                   },
                 )

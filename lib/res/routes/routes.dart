@@ -5,13 +5,12 @@ import '../../view/admin_dashboard/admin_controller_bindings.dart';
 import '../../view/admin_dashboard/admin_dashboard.dart';
 import '../../view/admin_dashboard/campaign/campaign_add_page.dart';
 import '../../view/admin_dashboard/campaign/campaign_page.dart';
-import '../../view/admin_dashboard/manage_members.dart';
 import '../../view/admin_dashboard/payment_history_admin/filter_payment_history.dart';
 import '../../view/admin_dashboard/payment_history_admin/payment_history_admin.dart';
 import '../../view/admin_dashboard/payment_history_admin/search_result_payment_history.dart';
 import '../../view/campaign_page/donate_page.dart';
 import '../../view/forgetPassword_page/forgetPassword_page.dart';
-import '../../view/forgetPassword_page/resetOTP_page.dart';
+import '../../view/forgetPassword_page/reset_OTP_page.dart';
 import '../../view/forgetPassword_page/set_email.dart';
 import '../../view/main_dashboard/main_dashboard.dart';
 import '../../view/main_dashboard/main_dashboard_bindings.dart';
@@ -23,7 +22,7 @@ import '../../view/user_dashboard/user_dashboard.dart';
 import '../routes_name/routes_name.dart';
 
 class Routes {
-  static appRoutes() => [
+  static List<GetPage<dynamic>> appRoutes() => [
     GetPage(
       name: RoutesName.splashPage,
       page: () => const SplashPage(),

@@ -33,16 +33,16 @@ class PaymentHistoryUser {
   }
 
   Map<dynamic, dynamic> toJson() {
-    final Map<dynamic, dynamic> data = new Map<dynamic, dynamic>();
-    data['id'] = this.id;
-    data['userId'] = this.userId;
-    data['campaignId'] = this.campaignId;
-    data['paymentId'] = this.paymentId;
-    data['amount'] = this.amount;
-    data['success'] = this.success;
-    data['donationType'] = this.donationType;
-    data['paymentDate'] = this.paymentDate;
-    data['createdAt'] = this.createdAt;
+    final Map<dynamic, dynamic> data = <dynamic, dynamic>{};
+    data['id'] = id;
+    data['userId'] = userId;
+    data['campaignId'] = campaignId;
+    data['paymentId'] = paymentId;
+    data['amount'] = amount;
+    data['success'] = success;
+    data['donationType'] = donationType;
+    data['paymentDate'] = paymentDate;
+    data['createdAt'] = createdAt;
     return data;
   }
 }
