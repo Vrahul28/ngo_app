@@ -13,6 +13,8 @@ class ChatController extends GetxController {
 
   RxList<QueryDocumentSnapshot> messages = <QueryDocumentSnapshot>[].obs;
   RxInt unreadCount = 0.obs;
+  RxInt personalUnread = 0.obs;
+  RxInt unreadCountForDashboard = 0.obs;
 
   StreamSubscription? messageSub;
   StreamSubscription? chatListSub;
@@ -208,6 +210,53 @@ Stream<QuerySnapshot> getChatList(String currentUserId) {
       .snapshots();
 }
 
+Future<int> getUnreadCount({
+  required String myUid,
+  required String otherUid,
+}) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('chat_list')
+      .doc(myUid)
+      .collection('users')
+      .doc(otherUid)
+      .get();
+
+  if (doc.exists) {
+    return doc.data()?['unreadCount'] ?? 0;
+  } else {
+    return 0;
+  }
+}
+
+//Count total unread (personal + group) for dashboard badge
+void listenDashboardUnread(String myUid, RxInt groupUnread) {
+  
+  // chatListSub?.cancel();
+
+  // chatListSub = FirebaseFirestore.instance
+  //     .collection('chat_list')
+  //     .doc(myUid)
+  //     .collection('users')
+  //     .snapshots()
+  //     .listen((snapshot) {
+
+  //   for (var doc in snapshot.docs) {
+  //     personalUnread += (doc['unreadCount'] ?? 0) as int;
+  //   }
+
+  //   // Combine personal + group
+  
+  // });
+
+  /// Also listen group changes
+  // ever(groupUnread, (_) {
+  //   unreadCount.refresh();
+  // });
+
+    unreadCountForDashboard.value = personalUnread.value + groupUnread.value;
+    debugPrint("Personal Unread: $personalUnread, Group Unread: ${groupUnread.value}");
+    debugPrint("Dashboard Unread Count Updated: ${unreadCountForDashboard.value}");
+}
 
   @override
   void onClose() {
@@ -215,5 +264,7 @@ Stream<QuerySnapshot> getChatList(String currentUserId) {
     chatListSub?.cancel();
     super.onClose();
   }
+
+
 }
 

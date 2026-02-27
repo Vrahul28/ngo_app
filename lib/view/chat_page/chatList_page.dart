@@ -43,10 +43,14 @@ class _ChatListPageState extends State<ChatListPage> {
 
     /// start badge listener
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      chat.listenChatListUnread(
-        widget.firebaseUid,
-        widget.adminFirebaseUid,
+      chat.listenDashboardUnread(
+        dash.userId.value,
+        controller.unreadGroupCount,
       );
+      // chat.listenChatListUnread(
+      //   widget.firebaseUid,
+      //   widget.adminFirebaseUid,
+      // );
     });
   }
 
@@ -98,9 +102,9 @@ class _ChatListPageState extends State<ChatListPage> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       final chats = snapshot.data!.docs;
-                      // if (chats.isEmpty) {
-                      //   return const Center(child: Text("No conversations yet"));
-                      // }
+                      if (chats.isEmpty) {
+                        return const Center(child: Text("No conversations yet"));
+                      }
                       return ListView.builder(
                         itemCount: chats.length,
                         itemBuilder: (context, index) {
@@ -108,7 +112,7 @@ class _ChatListPageState extends State<ChatListPage> {
                           return CustomMemberCard(
                             heading: data['name'],
                             subheading: data['lastMessage'],
-                            badgeCount: data['unreadCount'],
+                            badgeCount: data['unreadCount'],                          
                             onTap: () async {
                               /// reset unread
                               await FirebaseFirestore.instance
@@ -117,6 +121,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                   .collection('users')
                                   .doc(data['uid'])
                                   .update({'unreadCount': 0});
+                                  
                               Get.to(() => ChatPage(
                                     currentUserId: widget.firebaseUid,
                                     currentUserName: widget.userName,

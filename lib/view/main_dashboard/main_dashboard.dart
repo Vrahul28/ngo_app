@@ -110,7 +110,7 @@ class MainDashboard extends StatelessWidget {
                     children: [
                       const Icon(FontAwesomeIcons.comments),
                       /// badge
-                      if (chat.unreadCount.value > 0)
+                      if (chat.unreadCountForDashboard.value > 0)
                         Positioned(
                           right: -10,
                           top: -8,
@@ -125,9 +125,9 @@ class MainDashboard extends StatelessWidget {
                               minHeight: 18,
                             ),
                             child: Text(
-                              chat.unreadCount.value > 99
+                              chat.unreadCountForDashboard.value > 99
                                   ? "99+"
-                                  : chat.unreadCount.value.toString(),
+                                  : chat.unreadCountForDashboard.value.toString(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
