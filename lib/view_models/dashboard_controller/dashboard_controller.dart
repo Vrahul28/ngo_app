@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/view_models/user_prefernce/user_preference.dart';
-
 
 
 class DashboardController extends GetxController{
@@ -20,6 +20,17 @@ class DashboardController extends GetxController{
   PageController pageController = PageController(initialPage: 0);
   final user= UserPreference();
 
+  RxInt oneToOneUnreadCount = 0.obs;
+  RxInt groupUnreadCount = 0.obs;
+  RxInt totalUnreadCount = 0.obs;
+
+//Calaculate total unread count for dashboard badge
+  StreamSubscription<QuerySnapshot>? oneToOneUnreadSub;
+  StreamSubscription<DocumentSnapshot>? groupParticipantSub;
+  StreamSubscription<QuerySnapshot>? groupMessageSub;
+  static const String communityGroupId = 'Community_group';
+
+
   @override
   void onInit() {
     super.onInit();
@@ -28,18 +39,12 @@ class DashboardController extends GetxController{
 
   Future<void> getRoleForDash() async{
     role.value= await user.getRole();
-    await fetchAdminFirebaseUid();
-    getIdForDash();
-    getNameForDash();
-  }
-
-  void getIdForDash() async{
     userId.value= await user.getFirebaseId();
+    name.value= await user.getUserName();
+    await fetchAdminFirebaseUid();
+    listenUnreadMessagesCount();
   }
 
-  void getNameForDash() async{
-    name.value= await user.getUserName();
-  }
 
   void onPageChangedWithOutAnimation(int index) {
       currentIndex.value = index;
@@ -68,21 +73,87 @@ class DashboardController extends GetxController{
     adminEmail.value = doc.data()!['adminEmail'];
   }
 }
-//
-// Future<void> initNotificationSystem() async {
-//   await getRoleForDash();
-//
-//   // wait until firebase id available
-//   await Future.delayed(const Duration(milliseconds: 500));
-//
-//   if(userId.value.isNotEmpty){
-//     await NotificationService.init(userId.value);              // get FCM token & save
-//     await NotificationService.initialize(userId.value); // listeners
-//   }
-// }
+
+//Count unread message for both one-to-one and group chats, and update the total unread count for the dashboard badge
+void listenUnreadMessagesCount() {
+    if (userId.value.isEmpty) return;
+
+    _listenOneToOneUnreadCount();
+    _listenGroupUnreadCount();
+  }
+
+  void _listenOneToOneUnreadCount() {
+    oneToOneUnreadSub?.cancel();
+
+    oneToOneUnreadSub = firestore
+        .collection('chat_list')
+        .doc(userId.value)
+        .collection('users')
+        .snapshots()
+        .listen((snapshot) {
+      int count = 0;
+      for (final chatDoc in snapshot.docs) {
+        count += (chatDoc.data()['unreadCount'] ?? 0) as int;
+      }
+
+      oneToOneUnreadCount.value = count;
+      _updateTotalUnreadCount();
+    });
+  }
+
+  void _listenGroupUnreadCount() {
+    groupParticipantSub?.cancel();
+    groupMessageSub?.cancel();
+
+    groupParticipantSub = firestore
+        .collection('groups')
+        .doc(communityGroupId)
+        .collection('participants')
+        .doc(userId.value)
+        .snapshots()
+        .listen((participantSnapshot) {
+      final Timestamp lastSeen =
+          participantSnapshot.data()?['lastSeen'] ?? Timestamp(0, 0);
+
+      groupMessageSub?.cancel();
+      groupMessageSub = firestore
+          .collection('groups')
+          .doc(communityGroupId)
+          .collection('messages')
+          .orderBy('timestamp')
+          .snapshots()
+          .listen((messagesSnapshot) {
+        int count = 0;
+        for (final messageDoc in messagesSnapshot.docs) {
+          final messageData = messageDoc.data();
+          if (messageData['senderId'] != userId.value &&
+              messageData['timestamp'] != null &&
+              (messageData['timestamp'] as Timestamp).compareTo(lastSeen) > 0) {
+            count++;
+          }
+        }
+
+        groupUnreadCount.value = count;
+        _updateTotalUnreadCount();
+      });
+    });
+  }
+
+  void _updateTotalUnreadCount() {
+    totalUnreadCount.value = oneToOneUnreadCount.value + groupUnreadCount.value;
+  }
+
+   void clearUnreadBadgeCount() {
+    oneToOneUnreadCount.value = 0;
+    groupUnreadCount.value = 0;
+    totalUnreadCount.value = 0;
+  }
 
   @override
   void dispose() {
+    oneToOneUnreadSub?.cancel();
+    groupParticipantSub?.cancel();
+    groupMessageSub?.cancel();
     super.dispose();
     pageController.dispose();
   }

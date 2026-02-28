@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:ngo_app/res/app_colors/app_colors.dart';
+import 'package:ngo_app/view_models/dashboard_controller/dashboard_controller.dart';
 import '../../view_models/chat_controller/group_controller.dart';
 
 
@@ -25,19 +26,21 @@ class GroupChatPage extends StatefulWidget {
 class _GroupChatPageState extends State<GroupChatPage> {
   final GroupController controller = Get.find<GroupController>();
   final TextEditingController msgCtrl = TextEditingController();
+  final DashboardController dash = Get.find<DashboardController>();
 
   @override
 void initState() {
   super.initState();
-
+  
   controller.initGroupChat(
     userId: widget.currentUserId,
     userName: widget.currentUserName,
   );
 
   /// mark read AFTER open
-  Future.delayed(const Duration(milliseconds: 700), () {
+  Future.delayed(const Duration(milliseconds: 300), () {
     controller.markGroupAsRead();
+    dash.clearUnreadBadgeCount();
   });
 }
 

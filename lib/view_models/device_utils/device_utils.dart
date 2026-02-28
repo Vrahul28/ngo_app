@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class DeviceUtils extends GetxController{
   final deviceName= ''.obs;
   final deviceId= ''.obs;
+  final fcmToken= ''.obs;
 
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
@@ -26,5 +28,12 @@ class DeviceUtils extends GetxController{
       deviceName.value= iosInfo.name;
       deviceId.value= iosInfo.identifierForVendor ?? "IOS-UNKNOWN";
     }
+  }
+
+  Future<String?> getFcmToken() async {
+    final String? token = await FirebaseMessaging.instance.getToken();
+    debugPrint('FCM TOKEN AT APP START: $token');
+    fcmToken.value= token ?? '';
+    return token;
   }
 }

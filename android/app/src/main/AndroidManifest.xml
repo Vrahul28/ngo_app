@@ -34,7 +34,7 @@
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
-                 to determine the Window background behind the Flutter UI. -->
+                 to determine the Window background behind the Flutter UI. -->  
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
@@ -52,6 +52,9 @@
         <meta-data
              android:name="com.google.firebase.messaging.default_notification_channel_id"
              android:value="chat_channel"/>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8961859671672268~4710353813"/>   
 
     </application>
     <!-- Required to query activities that can process text, see:

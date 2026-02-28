@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ngo_app/view_models/dashboard_controller/dashboard_controller.dart';
 import '../../res/app_colors/app_colors.dart';
 import '../../view_models/chat_controller/chat_controller.dart';
+
 
 class ChatPage extends StatefulWidget {
   final String currentUserId;
@@ -23,11 +25,11 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final ChatController controller = Get.find<ChatController>();
   final TextEditingController _chatController = TextEditingController();
+  final DashboardController dash = Get.find<DashboardController>();
 
   @override
   void initState() {
     super.initState();
-
     controller.initChat(
       currentUser: widget.currentUserId,
       otherUser: widget.peerUserId,
@@ -37,6 +39,7 @@ class _ChatPageState extends State<ChatPage> {
     /// mark read AFTER chat opens
     Future.delayed(const Duration(milliseconds: 700), () {
       controller.markChatAsRead();
+      dash.clearUnreadBadgeCount();
     });
   }
 

@@ -43,14 +43,10 @@ class _ChatListPageState extends State<ChatListPage> {
 
     /// start badge listener
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      chat.listenDashboardUnread(
-        dash.userId.value,
-        controller.unreadGroupCount,
+      chat.listenChatListUnread(
+        widget.firebaseUid,
+        widget.adminFirebaseUid,
       );
-      // chat.listenChatListUnread(
-      //   widget.firebaseUid,
-      //   widget.adminFirebaseUid,
-      // );
     });
   }
 

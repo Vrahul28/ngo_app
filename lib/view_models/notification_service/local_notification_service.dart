@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../view/chat_page/chat_page.dart';
@@ -8,38 +7,57 @@ import '../../view/chat_page/group_chat_page.dart';
 
 class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static bool initialized = false;
 
   // Initialize local notifications
   static Future<void> initialize() async {
-
+  if (initialized) return;
   const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-
   const DarwinInitializationSettings iosSettings = DarwinInitializationSettings();
-
   const InitializationSettings settings = InitializationSettings(android: androidSettings, iOS: iosSettings);
 
   await _notifications.initialize(
     settings: settings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        if (response.payload != null) {
-          final data = jsonDecode(response.payload!);
+        // if (response.payload != null) {
+        //   final data = jsonDecode(response.payload!);
 
-          if (data['type'] == 'private') {
-            Get.to(() => ChatPage(
-              currentUserId: data['receiverId'],
-              peerUserId: data['senderId'],
-              currentUserName: data['receiverName'],
-              peerUserName: data['senderName'],
-            ));
-          } else {
-            Get.to(() => GroupChatPage(
-              groupId: data['groupId'],
-              currentUserId: data['receiverId'],
-              currentUserName: data['receiverName'],
-              userRole: data['userRole'],
-            ));
-          }
+        //   if (data['type'] == 'private') {
+        //     Get.to(() => ChatPage(
+        //       currentUserId: data['receiverId'],
+        //       peerUserId: data['senderId'],
+        //       currentUserName: data['receiverName'],
+        //       peerUserName: data['senderName'],
+        //     ));
+        //   } else {
+        //     Get.to(() => GroupChatPage(
+        //       groupId: data['groupId'],
+        //       currentUserId: data['receiverId'],
+        //       currentUserName: data['receiverName'],
+        //       userRole: data['userRole'],
+        //     ));
+        //   }
+        // }
+
+        if (response.payload == null || response.payload!.isEmpty) return;
+        final data = jsonDecode(response.payload!);
+
+        if (data['type'] == 'private') {
+          Get.to(() => ChatPage(
+                currentUserId: data['receiverId'] ?? '',
+                peerUserId: data['senderId'] ?? '',
+                currentUserName: data['receiverName'] ?? '',
+                peerUserName: data['senderName'] ?? '',
+              ));
+        } else if (data['type'] == 'group') {
+          Get.to(() => GroupChatPage(
+                groupId: data['groupId'] ?? 'Community_group',
+                currentUserId: data['receiverId'] ?? '',
+                currentUserName: data['receiverName'] ?? '',
+                userRole: data['userRole'] ?? 'User',
+              ));
         }
+
       });
 
   /// ⭐⭐⭐ CREATE ANDROID CHANNEL (THIS WAS MISSING)
@@ -52,37 +70,68 @@ class LocalNotificationService {
 
   await _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
+  initialized = true;
 }
 
 
 
   // show notification when message comes in foreground
-  static Future<void> showNotification(RemoteMessage message) async {
+//   static Future<void> showNotification(RemoteMessage message) async {
 
-  final notification = message.notification;
-  const AndroidNotificationDetails androidDetails =
-      AndroidNotificationDetails(
-    'chat_channel',
-    'Chat Messages',
-    channelDescription: 'Chat notifications',
-    importance: Importance.max,
-    priority: Priority.high,
-    playSound: true,
-  );
+//   final notification = message.notification;
+//   const AndroidNotificationDetails androidDetails =
+//       AndroidNotificationDetails(
+//     'chat_channel',
+//     'Chat Messages',
+//     channelDescription: 'Chat notifications',
+//     importance: Importance.max,
+//     priority: Priority.high,
+//     playSound: true,
+//   );
 
-  const NotificationDetails details = NotificationDetails(android: androidDetails);
+//   const NotificationDetails details = NotificationDetails(android: androidDetails);
 
-  final data = message.data;
-  debugPrint("print data: ${data.toString()}");
+//   final data = message.data;
+//   debugPrint("print data: ${data.toString()}");
 
-  await _notifications.show(
-    id: message.hashCode,
-    title: notification?.title ?? data['senderName'] ?? "New Message",
-    body: notification?.body ?? data['message'] ?? "",
-    notificationDetails: details,
-    payload: jsonEncode(data),
-  );
-}
+//   await _notifications.show(
+//     id: message.hashCode,
+//     title: notification?.title ?? data['senderName'] ?? "New Message",
+//     body: notification?.body ?? data['message'] ?? "",
+//     notificationDetails: details,
+//     payload: jsonEncode(data),
+//   );
+// }
+
+static Future<void> showNotification(RemoteMessage message) async {
+    await initialize();
+
+    final notification = message.notification;
+    final data = message.data;
+
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'chat_channel',
+      'Chat Messages',
+      channelDescription: 'Chat notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+    );
+
+    const NotificationDetails details = NotificationDetails(android: androidDetails);
+
+    final int notificationId = message.messageId?.hashCode ?? message.sentTime?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch;
+
+    await _notifications.show(
+      id: notificationId,
+      title: notification?.title ?? data['senderName'] ?? 'New Message',
+      body: notification?.body ?? data['message'] ?? '',
+      notificationDetails:details,
+      payload: jsonEncode(data),
+    );
+  }
 
 
 }

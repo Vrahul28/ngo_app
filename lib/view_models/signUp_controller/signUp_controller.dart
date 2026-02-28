@@ -69,7 +69,6 @@ class SignupController extends GetxController{
       debugPrint("API Response: $value");
 
       if(value['status'] == 200){
-        isLoading.value= false;
         Utils.showSnackBar(value['message'], '',true);
         Get.toNamed(
             RoutesName.otpPage,
@@ -77,6 +76,7 @@ class SignupController extends GetxController{
               "email": emailController.value.text,
             }
         );
+        isLoading.value= false;
         clearController();
       }else if(value['status'] == 400){
         isLoading.value= false;

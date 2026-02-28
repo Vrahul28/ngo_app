@@ -32,9 +32,9 @@ class SignInController extends GetxController{
     passwordController.value.clear();
     du.getDeviceInfo();
   }
+  
 
-
-  Future<void> firebaseLogin() async{
+  Future<void> firebaseLogin(String username, String role) async{
     /// 2️⃣ Firebase login
     final firebaseUser = await FirebaseAuth.instance
         .signInWithEmailAndPassword(
@@ -53,15 +53,17 @@ class SignInController extends GetxController{
     if (!doc.exists) {
       await firestore.collection("users").doc(firebaseUid.value).set({
         "uid": firebaseUid.value,
-        "name": userName.value,
+        "name": username,
         "email": emailController.value.text,
-        "role": userRole.value,
+        "role": role,
+        "fcmToken": await du.getFcmToken(),
       });
     }
   }
 
   //Sing In
   Future<void> singIn(String deviceName, String deviceID) async{
+    if (isLoading.value) return;
     isLoading.value= true;
 
     Map data= {
@@ -74,9 +76,7 @@ class SignInController extends GetxController{
     debugPrint(data.toString());
 
     _api.signIn(data).then((value) async{
-      isLoading.value= false;
-      // debugPrint(value['accessToken']);
-      // debugPrint( userId.value );
+      
       if(value['status'] == 400){
         Utils.showSnackBar(value['message'], '',true);
       }else if(value['message'] == 'Email not Verified'){
@@ -90,8 +90,9 @@ class SignInController extends GetxController{
         );
         clearController();
       }else{
-        await firebaseLogin();
-
+        await firebaseLogin(value['name'], value['role']);
+            // debugPrint(value['accessToken']);
+            // debugPrint( userId.value );
             // debugPrint(value['id'].toString());
             // debugPrint(value['name'].toString());
             // debugPrint(value['role'].toString());
@@ -112,10 +113,9 @@ class SignInController extends GetxController{
               value['refreshToken'],
               value['firebaseUid'],
             );
-
-            
-            // await AppStartupService.afterLogin(value['firebaseUid']);
-            await NotificationService.initialize(value['firebaseUid']);
+            isLoading.value= false;
+            // await NotificationService.initialize(value['firebaseUid']);
+            await NotificationService.initialize(firebaseUid.value);
             Get.toNamed(RoutesName.mainDashBoardPage);
             Utils.showSnackBar('Login Successfully', '', true);
             clearController();

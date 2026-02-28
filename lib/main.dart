@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:ngo_app/res/app_colors/app_colors.dart';
 import 'package:ngo_app/res/routes/routes.dart';
 import 'package:ngo_app/view_models/notification_service/local_notification_service.dart';
@@ -15,17 +16,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   debugPrint("Background Notification Received: ${message.messageId}");
-  // VERY IMPORTANT
   await LocalNotificationService.initialize();
-
-  // debugPrint("Background Notification Received: ${message.messageId}");
-
-  // SHOW NOTIFICATION IN BACKGROUND
-  // await LocalNotificationService.showNotification(message);
+  if (message.notification == null) {
+    await LocalNotificationService.showNotification(message);
+  }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
 
   /// 1️⃣ Initialize Firebase
   await Firebase.initializeApp(
@@ -33,7 +32,7 @@ Future<void> main() async {
   );
 
   /// 2️⃣ Initialize Local Notification Channel
-  // await LocalNotificationService.initialize();
+  await LocalNotificationService.initialize();
 
   /// 3️⃣ Register background handler (MUST BE BEFORE runApp)
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -45,17 +44,15 @@ Future<void> main() async {
     sound: true,
   );
 
-  debugPrint("Permission status: ${settings.authorizationStatus}");
-
   /// 5️⃣ Force FCM to generate token on app start
-  String? token = await FirebaseMessaging.instance.getToken();
+  debugPrint('Permission status: ${settings.authorizationStatus}');
 
-  debugPrint("FCM TOKEN AT APP START: $token");
+  final String? token = await FirebaseMessaging.instance.getToken();
+  debugPrint('FCM TOKEN AT APP START: $token');
 
   /// 6️⃣ Token refresh listener (VERY IMPORTANT)
   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
     debugPrint("FCM TOKEN REFRESHED: $newToken");
-    // later we will update Firestore here
   });
 
   runApp(const MyApp());

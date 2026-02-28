@@ -25,7 +25,6 @@ class ChatController extends GetxController {
   }
 
   /// ================= CHAT PAGE =================
-
   void initChat({
     required String currentUser,
     required String otherUser,
@@ -81,7 +80,6 @@ class ChatController extends GetxController {
         .set({
       'lastSeen': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
-
     unreadCount.value = 0;
   }
 
@@ -90,7 +88,6 @@ class ChatController extends GetxController {
   void listenChatListUnread(String myUid, String otherUid) async {
 
     String id = getChatId(myUid, otherUid);
-
     debugPrint("LISTENING CHAT ID: $id");
 
     // get lastSeen
@@ -101,9 +98,7 @@ class ChatController extends GetxController {
         .doc(myUid)
         .get();
 
-    Timestamp lastSeen =
-        participantDoc.data()?['lastSeen'] ?? Timestamp(0, 0);
-
+    Timestamp lastSeen = participantDoc.data()?['lastSeen'] ?? Timestamp(0, 0);
     chatListSub?.cancel();
 
     chatListSub = firestore
@@ -118,20 +113,17 @@ class ChatController extends GetxController {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-
         if (data['senderId'] != myUid &&
             data['timestamp'] != null &&
             (data['timestamp'] as Timestamp).compareTo(lastSeen) > 0) {
           count++;
         }
       }
-
       unreadCount.value = count;
     });
   }
 
   /// ================= SEND MESSAGE =================
-
   Future<void> sendMessage(
       String text,
       String senderId,
@@ -157,10 +149,10 @@ class ChatController extends GetxController {
       'participants': [senderId, receiverId],
       'lastMessage': text,
       'lastMessageTime': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    
+    }, 
+    SetOptions(merge: true));
   }
+
 
   Future<void> updateChatList({
   required String senderId,
@@ -171,7 +163,6 @@ class ChatController extends GetxController {
 }) async {
 
   final time = FieldValue.serverTimestamp();
-
   /// sender chat list
   await FirebaseFirestore.instance
       .collection('chat_list')
@@ -208,54 +199,6 @@ Stream<QuerySnapshot> getChatList(String currentUserId) {
       .collection('users')
       .orderBy('timestamp', descending: true)
       .snapshots();
-}
-
-Future<int> getUnreadCount({
-  required String myUid,
-  required String otherUid,
-}) async {
-  final doc = await FirebaseFirestore.instance
-      .collection('chat_list')
-      .doc(myUid)
-      .collection('users')
-      .doc(otherUid)
-      .get();
-
-  if (doc.exists) {
-    return doc.data()?['unreadCount'] ?? 0;
-  } else {
-    return 0;
-  }
-}
-
-//Count total unread (personal + group) for dashboard badge
-void listenDashboardUnread(String myUid, RxInt groupUnread) {
-  
-  // chatListSub?.cancel();
-
-  // chatListSub = FirebaseFirestore.instance
-  //     .collection('chat_list')
-  //     .doc(myUid)
-  //     .collection('users')
-  //     .snapshots()
-  //     .listen((snapshot) {
-
-  //   for (var doc in snapshot.docs) {
-  //     personalUnread += (doc['unreadCount'] ?? 0) as int;
-  //   }
-
-  //   // Combine personal + group
-  
-  // });
-
-  /// Also listen group changes
-  // ever(groupUnread, (_) {
-  //   unreadCount.refresh();
-  // });
-
-    unreadCountForDashboard.value = personalUnread.value + groupUnread.value;
-    debugPrint("Personal Unread: $personalUnread, Group Unread: ${groupUnread.value}");
-    debugPrint("Dashboard Unread Count Updated: ${unreadCountForDashboard.value}");
 }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ngo_app/res/routes_name/routes_name.dart';
-import 'package:ngo_app/view_models/chat_controller/chat_controller.dart';
 import '../../res/app_colors/app_colors.dart';
 import 'package:get/get.dart';
 import '../../view_models/admin_controller/admin_controller.dart';
@@ -18,7 +17,6 @@ class MainDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dash= Get.find<DashboardController>();
     final admin= Get.find<AdminController>();
-    final chat = Get.find<ChatController>();
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -110,7 +108,7 @@ class MainDashboard extends StatelessWidget {
                     children: [
                       const Icon(FontAwesomeIcons.comments),
                       /// badge
-                      if (chat.unreadCountForDashboard.value > 0)
+                      if (dash.totalUnreadCount.value > 0)
                         Positioned(
                           right: -10,
                           top: -8,
@@ -125,9 +123,9 @@ class MainDashboard extends StatelessWidget {
                               minHeight: 18,
                             ),
                             child: Text(
-                              chat.unreadCountForDashboard.value > 99
+                              dash.totalUnreadCount.value > 99
                                   ? "99+"
-                                  : chat.unreadCountForDashboard.value.toString(),
+                                  : dash.totalUnreadCount.value.toString(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,

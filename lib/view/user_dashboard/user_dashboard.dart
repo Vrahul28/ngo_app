@@ -1,17 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:ngo_app/view_models/user_dashboard_controller/user_dashborad_controller.dart';
 import '../../res/app_colors/app_colors.dart';
 import '../../res/routes_name/routes_name.dart';
 import '../../utils/utils.dart';
 import 'package:get/get.dart';
 
-class UserDashboard extends StatelessWidget {
+class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
 
   @override
+  State<UserDashboard> createState() => _UserDashboardState();
+}
+
+class _UserDashboardState extends State<UserDashboard> {
+  final user = Get.find<UserDashboardController>();
+  // late BannerAd staticAd;
+  // late BannerAd inlineAd;
+  // late NativeAd nativeAd;
+
+  // bool nativeAdLoaded = false;  
+  // bool staticAdLoaded = false;
+  // bool inlineAdLoaded = false;
+
+    static const AdRequest request = AdRequest(
+    // keywords: ['', ''],
+    // contentUrl: '',
+    // nonPersonalizedAds: false
+  );
+
+//   void loadNativeAd() {
+//   nativeAd = NativeAd(
+//     adUnitId: "ca-app-pub-3940256099942544/2247696110",
+//     // adUnitId: "ca-app-pub-8961859671672268/1567973049", // your native ad id
+//     factoryId: "dashboardNativeAd", // must match Android factory
+//     request: const AdRequest(),
+//     listener: NativeAdListener(
+//       onAdLoaded: (ad) {
+//         setState(() {
+//           nativeAdLoaded = true;
+//         });
+          
+//       },
+//       onAdFailedToLoad: (ad, error) {
+//         ad.dispose();
+//         debugPrint("Native ad failed: ${error.message}");
+//       },
+//     ),
+//   );
+
+//   nativeAd.load();
+// }
+
+//Static Banner Ad
+  // void loadStaticBannerAd() {
+  //   staticAd = BannerAd(
+  //     adUnitId: "ca-app-pub-8961859671672268/9638180542",
+  //     size: AdSize.leaderboard,
+  //     request: request,
+  //     listener: BannerAdListener(
+  //       onAdLoaded: (ad) {
+  //         setState(() {
+  //            staticAdLoaded = true;
+  //         });
+           
+  //       },
+  //       onAdFailedToLoad: (ad, error){
+  //         ad.dispose();
+  //         debugPrint('ad failed to load ${error.message}');
+  //       }
+  //     )
+  //   );
+  //   staticAd.load();
+  // }
+
+   ///function to load inline banner ad
+  // void loadInlineBannerAd() {
+  //   inlineAd = BannerAd(
+  //       adUnitId: "ca-app-pub-8961859671672268/9925955153",
+  //       size: AdSize.leaderboard,
+  //       request: request,
+  //       listener: BannerAdListener(
+  //           onAdLoaded: (ad) {
+  //             setState(() {
+  //               inlineAdLoaded = true;
+  //             });
+                
+  //           },
+  //           onAdFailedToLoad: (ad, error){
+  //             ad.dispose();
+  //             debugPrint('ad failed to load ${error.message}');
+  //           }
+  //       )
+  //   );
+  //   inlineAd.load();
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Get.find<UserDashboardController>();
+    var size= MediaQuery.sizeOf(context);
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -142,6 +240,56 @@ class UserDashboard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                Obx(() {
+                  if (!user.staticAdLoaded.value || user.staticAd == null) {
+                    return const SizedBox();
+                  }
+
+                  return Container(
+                    height: 60,
+                    alignment: Alignment.center,
+                    child: AdWidget(ad: user.staticAd!),
+                  );
+                }),
+                // if(staticAdLoaded)
+                // Container(
+                //   width: size.width,
+                //   height: 90,
+                //   decoration: BoxDecoration(
+                //     border: Border.all(
+                //       color: Colors.black,
+                //       width: 1,
+                //       ),
+                //   ),
+                //   alignment: Alignment.center,
+                //   child: AdWidget(ad: staticAd),
+                // ),
+                const SizedBox(height: 24),
+                Obx(() {
+                  if (!user.nativeAdLoaded.value || user.nativeAd == null) {
+                    return const SizedBox();
+                  }
+
+                  return Container(
+                    height: 100,
+                    alignment: Alignment.center,
+                    child: AdWidget(ad: user.nativeAd!),
+                  );
+                }),
+              //  if (nativeAdLoaded)
+              //  Container(
+              //     width: size.width,
+              //     height: 100,
+              //     decoration: BoxDecoration(
+              //       border: Border.all(
+              //         color: Colors.black,
+              //         width: 1,
+              //         ),
+              //     ),
+              //     alignment: Alignment.center,
+              //     child: AdWidget(ad: nativeAd)
+              //   ),
+  
                 // Project Updates
                 // const Text(
                 //   'Admin Announcements',
