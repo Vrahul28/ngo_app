@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 
 class ChatController extends GetxController {
@@ -19,9 +20,38 @@ class ChatController extends GetxController {
   StreamSubscription? messageSub;
   StreamSubscription? chatListSub;
 
+  NativeAd? nativeAd;
+  var nativeAdLoaded = false.obs;
+
   /// Create stable chat id
   String getChatId(String id1, String id2) {
     return id1.compareTo(id2) < 0 ? '${id1}_$id2' : '${id2}_$id1';
+  }
+
+  @override
+  void onReady() { // Changed from onInit
+    super.onReady();
+    loadNativeAd();
+  }
+
+  //Native Ad
+  void loadNativeAd() {
+    nativeAd = NativeAd(
+      adUnitId: "ca-app-pub-3940256099942544/2247696110",
+      // adUnitId: "ca-app-pub-8961859671672268/1567973049", // your native ad id
+      factoryId: "dashboardNativeAd", // must match Android factory
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          nativeAdLoaded.value = true;
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          debugPrint("Native ad failed: ${error.message}");
+        },
+      ),
+    );
+    nativeAd!.load();
   }
 
   /// ================= CHAT PAGE =================
@@ -58,7 +88,6 @@ class ChatController extends GetxController {
   /// listen chat messages
   void listenMessages() {
     messageSub?.cancel();
-
     messageSub = firestore
         .collection('chats')
         .doc(chatId.value)
@@ -70,56 +99,21 @@ class ChatController extends GetxController {
     });
   }
 
-  /// mark read
-  Future<void> markChatAsRead() async {
-    await firestore
-        .collection('chats')
-        .doc(chatId.value)
-        .collection('participants')
-        .doc(currentUserId)
-        .set({
-      'lastSeen': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-    unreadCount.value = 0;
-  }
-
   /// ================= CHAT LIST BADGE =================
-
   void listenChatListUnread(String myUid, String otherUid) async {
-
     String id = getChatId(myUid, otherUid);
     debugPrint("LISTENING CHAT ID: $id");
 
-    // get lastSeen
-    final participantDoc = await firestore
-        .collection('chats')
-        .doc(id)
-        .collection('participants')
-        .doc(myUid)
-        .get();
-
-    Timestamp lastSeen = participantDoc.data()?['lastSeen'] ?? Timestamp(0, 0);
     chatListSub?.cancel();
 
     chatListSub = firestore
         .collection('chats')
         .doc(id)
-        .collection('messages')
-        .orderBy('timestamp')
+        .collection('participants')
+        .doc(myUid)
         .snapshots()
-        .listen((snapshot) {
-
-      int count = 0;
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        if (data['senderId'] != myUid &&
-            data['timestamp'] != null &&
-            (data['timestamp'] as Timestamp).compareTo(lastSeen) > 0) {
-          count++;
-        }
-      }
-      unreadCount.value = count;
+        .listen((doc) {
+      unreadCount.value = doc.data()?['unreadCount'] ?? 0;
     });
   }
 
@@ -132,25 +126,55 @@ class ChatController extends GetxController {
       ) async {
 
     if (text.trim().isEmpty) return;
+    
+    try{
+      final chatRef = firestore.collection('chats').doc(chatId);
+      final msgRef = chatRef.collection('messages');
 
-    final msgRef = firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages');
+      await msgRef.add({
+        'message': text.trim(),
+        'senderId': senderId,
+        'receiverId': receiverId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
-    await msgRef.add({
-      'message': text.trim(),
-      'senderId': senderId,
-      'receiverId': receiverId,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+      await chatRef.set({
+        'participants': [senderId, receiverId],
+        'lastMessage': text.trim(),
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-    await firestore.collection('chats').doc(chatId).set({
-      'participants': [senderId, receiverId],
-      'lastMessage': text,
-      'lastMessageTime': FieldValue.serverTimestamp(),
-    }, 
-    SetOptions(merge: true));
+      /// 🔥 INCREMENT unread count of receiver
+      await chatRef
+          .collection('participants')
+          .doc(receiverId)
+          .set({
+        'unreadCount': FieldValue.increment(1),
+      }, SetOptions(merge: true));
+    }catch(e){
+      debugPrint("Firestore error in chat controller: $e");
+    }
+
+
+
+    // final msgRef = firestore
+    //     .collection('chats')
+    //     .doc(chatId)
+    //     .collection('messages');
+    //
+    // await msgRef.add({
+    //   'message': text.trim(),
+    //   'senderId': senderId,
+    //   'receiverId': receiverId,
+    //   'timestamp': FieldValue.serverTimestamp(),
+    // });
+    //
+    // await firestore.collection('chats').doc(chatId).set({
+    //   'participants': [senderId, receiverId],
+    //   'lastMessage': text,
+    //   'lastMessageTime': FieldValue.serverTimestamp(),
+    // },
+    // SetOptions(merge: true));
   }
 
 
@@ -191,6 +215,18 @@ class ChatController extends GetxController {
     'unreadCount': FieldValue.increment(1),
   }, SetOptions(merge: true));
 }
+
+  Future<void> resetUnread() async {
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId.value)
+        .collection('participants')
+        .doc(currentUserId)
+        .set({
+      'unreadCount': 0,
+      'lastSeen': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
 
 Stream<QuerySnapshot> getChatList(String currentUserId) {
   return FirebaseFirestore.instance

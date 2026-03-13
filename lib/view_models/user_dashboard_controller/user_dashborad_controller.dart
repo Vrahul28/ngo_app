@@ -11,16 +11,10 @@ class UserDashboardController extends GetxController{
   BannerAd? inlineAd;
   NativeAd? nativeAd;
 
-  RxBool nativeAdLoaded = false.obs;  
-  RxBool staticAdLoaded = false.obs;
+  var nativeAdLoaded = false.obs;  
+  var staticAdLoaded = false.obs;
   RxBool inlineAdLoaded = false.obs;
 
-   static const AdRequest request = AdRequest(
-    // keywords: ['', ''],
-    // contentUrl: '',
-    // nonPersonalizedAds: false
-  );
-  
   //For dashboard
   final _api= UserDashboardRepo();
   final rxRequestStatus = Status.LOADING.obs;
@@ -39,17 +33,14 @@ class UserDashboardController extends GetxController{
   void onInit() {
     super.onInit();
     fetchTotalDonationByUser();
-    loadNativeAd();
-    loadStaticBannerAd();
-    loadInlineBannerAd();
   }
 
   @override
-  void dispose() {
-    staticAd?.dispose();
-    inlineAd?.dispose();
-    nativeAd?.dispose();
-    super.dispose();
+  void onReady() { // Changed from onInit
+    super.onReady();
+     loadStaticBannerAd();
+     loadNativeAd();
+     loadInlineBannerAd();
   }
 
   //Fetch Count OF Members
@@ -84,23 +75,22 @@ class UserDashboardController extends GetxController{
       },
     ),
   );
-
   nativeAd!.load();
 }
 
 //Static Banner Ad
   void loadStaticBannerAd() {
     staticAd = BannerAd(
-      adUnitId: "ca-app-pub-8961859671672268/9638180542",
+      adUnitId: "ca-app-pub-8961859671672268/7445387190",
       size: AdSize.leaderboard,
-      request: request,
+      request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
             staticAdLoaded.value = true;
         },
         onAdFailedToLoad: (ad, error){
           ad.dispose();
-          debugPrint('ad failed to load ${error.message}');
+          debugPrint('Static ad failed to load ${error.message}');
         }
       )
     );
@@ -112,7 +102,7 @@ class UserDashboardController extends GetxController{
     inlineAd = BannerAd(
         adUnitId: "ca-app-pub-8961859671672268/9925955153",
         size: AdSize.leaderboard,
-        request: request,
+        request: const AdRequest(),
         listener: BannerAdListener(
             onAdLoaded: (ad) {
                 inlineAdLoaded.value = true;
@@ -124,6 +114,14 @@ class UserDashboardController extends GetxController{
         )
     );
     inlineAd!.load();
+  }
+
+  @override
+  void onClose() {
+    staticAd?.dispose();
+    inlineAd?.dispose();
+    nativeAd?.dispose();
+    super.onClose();
   }
 
 }

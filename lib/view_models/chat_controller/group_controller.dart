@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 
@@ -180,16 +181,22 @@ class GroupController extends GetxController {
   }
 
   Future<bool> isUserInGroup({required String userId}) async {
-    final doc = await firestore
-        .collection('groups')
-        .doc(GROUP_ID)
-        .get();
+    try{
+      final doc = await firestore
+          .collection('groups')
+          .doc(GROUP_ID)
+          .get();
 
-    if (!doc.exists) return false;
+      if (!doc.exists) return false;
 
-    final Map members = doc.data()?['members'] ?? {};
+      final Map members = doc.data()?['members'] ?? {};
 
-    return members.containsKey(userId);
+      return members.containsKey(userId);
+    }catch(e){
+      debugPrint("Firestore error: $e");
+      return false;
+    }
+
   }
 
   Future<void> addUserToGroup({

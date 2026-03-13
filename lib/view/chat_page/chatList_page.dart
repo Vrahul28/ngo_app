@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:ngo_app/res/app_colors/app_colors.dart';
 import 'package:ngo_app/view_models/chat_controller/chat_controller.dart';
 import '../../view_models/chat_controller/group_controller.dart';
 import '../../view_models/dashboard_controller/dashboard_controller.dart';
+import '../../view_models/user_dashboard_controller/user_dashborad_controller.dart';
 import '../../widgets/custom_member_card.dart';
 import '../admin_dashboard/manage_members.dart';
 import 'chat_page.dart';
@@ -38,9 +40,7 @@ class _ChatListPageState extends State<ChatListPage> {
   @override
   void initState() {
     super.initState();
-
     controller.listenGroupUnread(widget.firebaseUid);
-
     /// start badge listener
     WidgetsBinding.instance.addPostFrameCallback((_) {
       chat.listenChatListUnread(
@@ -52,6 +52,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
+    var size= MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -67,6 +68,7 @@ class _ChatListPageState extends State<ChatListPage> {
                   subheading: widget.adminEmail,
                   badgeCount: chat.unreadCount.value,
                   onTap: () async {
+                    dash.setUnreadCount(widget.adminFirebaseUid);
                     Get.to(() => ChatPage(
                       currentUserId: widget.firebaseUid,
                       currentUserName: widget.userName,
@@ -110,14 +112,8 @@ class _ChatListPageState extends State<ChatListPage> {
                             subheading: data['lastMessage'],
                             badgeCount: data['unreadCount'],                          
                             onTap: () async {
+                              dash.setUnreadCount(data['uid']);
                               /// reset unread
-                              await FirebaseFirestore.instance
-                                  .collection('chat_list')
-                                  .doc(widget.firebaseUid)
-                                  .collection('users')
-                                  .doc(data['uid'])
-                                  .update({'unreadCount': 0});
-                                  
                               Get.to(() => ChatPage(
                                     currentUserId: widget.firebaseUid,
                                     currentUserName: widget.userName,
@@ -130,7 +126,21 @@ class _ChatListPageState extends State<ChatListPage> {
                       );
                     },
                   ),
-                )
+                ),
+              Obx(() => chat.nativeAdLoaded.value ?
+                Container(
+                  width: size.width,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 1,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: AdWidget(ad: chat.nativeAd!),
+                ) : const SizedBox.shrink(),
+              ),
             ],
           ),
         ),

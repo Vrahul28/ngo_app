@@ -38,14 +38,14 @@ class _ChatPageState extends State<ChatPage> {
     /// VERY IMPORTANT
     /// mark read AFTER chat opens
     Future.delayed(const Duration(milliseconds: 700), () {
-      controller.markChatAsRead();
+      controller.resetUnread();
       dash.clearUnreadBadgeCount();
     });
   }
 
    @override
   void dispose() {
-    controller.markChatAsRead(); // also on exit
+     controller.resetUnread();
     _chatController.dispose();
     super.dispose();
   }
@@ -90,14 +90,6 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       child: Column(
                         children: [
-                          // if (!isMe)
-                          //   Text(
-                          //     msg['senderName'],
-                          //     style: const TextStyle(
-                          //       fontSize: 10,
-                          //       fontWeight: FontWeight.bold,
-                          //     ),
-                          //   ),
                             Text(
                               msg['message'] ?? '',
                               style: TextStyle(

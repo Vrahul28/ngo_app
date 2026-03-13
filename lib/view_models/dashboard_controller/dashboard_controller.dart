@@ -24,7 +24,7 @@ class DashboardController extends GetxController{
   RxInt groupUnreadCount = 0.obs;
   RxInt totalUnreadCount = 0.obs;
 
-//Calaculate total unread count for dashboard badge
+//Calculate total unread count for dashboard badge
   StreamSubscription<QuerySnapshot>? oneToOneUnreadSub;
   StreamSubscription<DocumentSnapshot>? groupParticipantSub;
   StreamSubscription<QuerySnapshot>? groupMessageSub;
@@ -101,6 +101,17 @@ void listenUnreadMessagesCount() {
     });
   }
 
+  void setUnreadCount(String adminID) async{
+    await firestore
+        .collection('chat_list')
+        .doc(userId.value)
+        .collection('users')
+        .doc(adminID)
+        .set({
+      'unreadCount': 0,
+    }, SetOptions(merge: true));
+  }
+
   void _listenGroupUnreadCount() {
     groupParticipantSub?.cancel();
     groupMessageSub?.cancel();
@@ -112,8 +123,7 @@ void listenUnreadMessagesCount() {
         .doc(userId.value)
         .snapshots()
         .listen((participantSnapshot) {
-      final Timestamp lastSeen =
-          participantSnapshot.data()?['lastSeen'] ?? Timestamp(0, 0);
+      final Timestamp lastSeen = participantSnapshot.data()?['lastSeen'] ?? Timestamp(0, 0);
 
       groupMessageSub?.cancel();
       groupMessageSub = firestore
@@ -140,6 +150,8 @@ void listenUnreadMessagesCount() {
   }
 
   void _updateTotalUnreadCount() {
+    debugPrint("oneToOneUnreadCount: $oneToOneUnreadCount");
+    debugPrint("groupUnreadCount: $groupUnreadCount");
     totalUnreadCount.value = oneToOneUnreadCount.value + groupUnreadCount.value;
   }
 
